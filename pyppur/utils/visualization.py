@@ -159,6 +159,7 @@ def plot_comparison(
     embeddings: Dict[str, np.ndarray],
     labels: Optional[np.ndarray] = None,
     metrics: Optional[Dict[str, Dict[str, float]]] = None,
+    title: Optional[str] = None,  # <-- add this line
     figsize: Tuple[float, float] = (15, 5),
     cmap: str = "tab10",
     alpha: float = 0.7,
@@ -171,6 +172,7 @@ def plot_comparison(
         embeddings: Dictionary of embeddings {name: embedded_data}
         labels: Optional labels for coloring points
         metrics: Optional dictionary of metrics for each embedding
+        title: Optional overall figure title
         figsize: Figure size (width, height) in inches
         cmap: Colormap name
         alpha: Transparency of points
@@ -199,6 +201,10 @@ def plot_comparison(
             embedding, labels, title=name, metrics=plot_metrics,
             cmap=cmap, alpha=alpha, s=s, ax=axes[i]
         )
+    
+    # Add overall title if provided
+    if title:
+        fig.suptitle(title, fontsize=16, y=1.02)
     
     plt.tight_layout()
     
