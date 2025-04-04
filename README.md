@@ -72,27 +72,6 @@ print(f"  Distance distortion: {recon_metrics['distance_distortion']:.4f}")
 print(f"  Reconstruction error: {recon_metrics['reconstruction_error']:.4f}")
 ```
 
-### Comparing Methods
-
-```python
-import matplotlib.pyplot as plt
-
-# Plot the results
-plt.figure(figsize=(12, 5))
-
-plt.subplot(1, 2, 1)
-plt.scatter(X_transformed[:, 0], X_transformed[:, 1], c=y, cmap='tab10')
-plt.title('Projection Pursuit (Distance Distortion)')
-plt.colorbar()
-
-plt.subplot(1, 2, 2)
-plt.scatter(X_transformed_recon[:, 0], X_transformed_recon[:, 1], c=y, cmap='tab10')
-plt.title('Projection Pursuit (Reconstruction)')
-plt.colorbar()
-
-plt.tight_layout()
-plt.show()
-```
 
 ## API Reference
 
@@ -130,7 +109,7 @@ Where:
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.10+
 - NumPy
 - SciPy
 - scikit-learn
@@ -145,10 +124,10 @@ If you use `pyppur` in your research, please cite it as:
 
 ```
 @software{pyppur,
-  author = {Your Name},
+  author = {Gaurav Sood},
   title = {pyppur: Python Projection Pursuit Unsupervised Reduction},
-  url = {https://github.com/yourusername/pyppur},
+  url = {https://github.com/gojiplus/pyppur},
   version = {0.1.0},
-  year = {2023},
+  year = {2025},
 }
 ```
