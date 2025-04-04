@@ -1,5 +1,8 @@
 ### pyppur: **P**ython **P**rojection **P**ursuit **U**nsupervised **R**eduction
 
+[![PyPI](https://img.shields.io/pypi/v/pyppur.svg)](https://pypi.org/project/pyppur/)
+
+
 ## Overview
 
 `pyppur` is a Python package that implements projection pursuit methods for dimensionality reduction. Unlike traditional methods such as PCA, `pyppur` focuses on finding interesting non-linear projections by minimizing either reconstruction loss or distance distortion.
