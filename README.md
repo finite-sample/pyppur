@@ -1,7 +1,7 @@
 ### 🪈 pyppur: **P**ython **P**rojection **P**ursuit **U**nsupervised **R**eduction
 
 [![PyPI](https://img.shields.io/pypi/v/pyppur.svg)](https://pypi.org/project/pyppur/)
-
+[![PyPI Downloads](https://static.pepy.tech/badge/pyppur)](https://pepy.tech/projects/pyppur)
 
 ## Overview
 
