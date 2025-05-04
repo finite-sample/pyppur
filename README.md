@@ -134,3 +134,11 @@ If you use `pyppur` in your research, please cite it as:
   year = {2025},
 }
 ```
+
+## 🔗 Adjacent Repositories
+
+- [gojiplus/get-weather-data](https://github.com/gojiplus/get-weather-data) — Get weather data for a list of zip codes for a range of dates
+- [gojiplus/text-as-data](https://github.com/gojiplus/text-as-data) — Pipeline for Analyzing Text Data: Acquire, Preprocess, Analyze
+- [gojiplus/rmcp](https://github.com/gojiplus/rmcp) — R MCP Server
+- [gojiplus/calibre](https://github.com/gojiplus/calibre) — Advanced Calibration Models
+- [gojiplus/skiplist_join](https://github.com/gojiplus/skiplist_join)
