@@ -3,7 +3,7 @@ Base class for optimization methods.
 """
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple, Dict, Any, Callable
+from typing import Any, Callable, Dict, Optional, Tuple
 
 import numpy as np
 
@@ -11,11 +11,11 @@ import numpy as np
 class BaseOptimizer(ABC):
     """
     Abstract base class for projection pursuit optimizers.
-    
+
     All optimizer implementations should inherit from this class
     and implement the required methods.
     """
-    
+
     def __init__(
         self,
         objective_func: Callable,
@@ -24,11 +24,11 @@ class BaseOptimizer(ABC):
         tol: float = 1e-6,
         random_state: Optional[int] = None,
         verbose: bool = False,
-        **kwargs
+        **kwargs,
     ):
         """
         Initialize the optimizer.
-        
+
         Args:
             objective_func: Objective function to minimize
             n_components: Number of projection components
@@ -45,28 +45,25 @@ class BaseOptimizer(ABC):
         self.random_state = random_state
         self.verbose = verbose
         self.kwargs = kwargs
-        
+
         # Set random seed if provided
         if random_state is not None:
             np.random.seed(random_state)
-    
+
     @abstractmethod
     def optimize(
-        self, 
-        X: np.ndarray, 
-        initial_guess: Optional[np.ndarray] = None, 
-        **kwargs
+        self, X: np.ndarray, initial_guess: Optional[np.ndarray] = None, **kwargs
     ) -> Tuple[np.ndarray, float, Dict[str, Any]]:
         """
         Optimize the projection directions.
-        
+
         Args:
             X: Input data, shape (n_samples, n_features)
             initial_guess: Optional initial guess for projection directions
             **kwargs: Additional arguments for the objective function
-            
+
         Returns:
-            Tuple[np.ndarray, float, Dict[str, Any]]: 
+            Tuple[np.ndarray, float, Dict[str, Any]]:
                 - Optimized projection directions, shape (n_components, n_features)
                 - Final objective value
                 - Additional optimizer information
