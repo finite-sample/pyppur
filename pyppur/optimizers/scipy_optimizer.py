@@ -28,8 +28,8 @@ class ScipyOptimizer(BaseOptimizer):
         tol: float = 1e-6,
         random_state: Optional[int] = None,
         verbose: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the SciPy optimizer.
 
@@ -55,7 +55,7 @@ class ScipyOptimizer(BaseOptimizer):
         self.method = method
 
     def optimize(
-        self, X: np.ndarray, initial_guess: Optional[np.ndarray] = None, **kwargs
+        self, X: np.ndarray, initial_guess: Optional[np.ndarray] = None, **kwargs: Any
     ) -> Tuple[np.ndarray, float, Dict[str, Any]]:
         """
         Optimize the projection directions using SciPy's optimization methods.
@@ -77,11 +77,11 @@ class ScipyOptimizer(BaseOptimizer):
         if initial_guess is None:
             if self.verbose:
                 print("No initial guess provided, using random initialization")
-            initial_guess = np.random.randn(self.n_components, n_features)
-            initial_guess = initial_guess / np.linalg.norm(
-                initial_guess, axis=1, keepdims=True
+            initial_guess_matrix = np.random.randn(self.n_components, n_features)
+            initial_guess_matrix = initial_guess_matrix / np.linalg.norm(
+                initial_guess_matrix, axis=1, keepdims=True
             )
-            initial_guess_flat = initial_guess.flatten()
+            initial_guess_flat = initial_guess_matrix.flatten()
         else:
             # Ensure correct shape and normalization
             if initial_guess.shape != (self.n_components, n_features):
@@ -107,12 +107,14 @@ class ScipyOptimizer(BaseOptimizer):
 
         # Run optimization
         k = self.n_components
-        args = (X, k) if len(kwargs) == 0 else (X, k, *kwargs.values())
+
+        # Objective function with proper keyword argument handling
+        def objective_wrapper(a_flat: np.ndarray) -> float:
+            return self.objective_func(a_flat, X, k, **kwargs)
 
         result = minimize(
-            self.objective_func,
+            objective_wrapper,
             initial_guess_flat,
-            args=args,
             method=self.method,
             options=options,
         )

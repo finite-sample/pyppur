@@ -24,8 +24,8 @@ class BaseOptimizer(ABC):
         tol: float = 1e-6,
         random_state: Optional[int] = None,
         verbose: bool = False,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize the optimizer.
 

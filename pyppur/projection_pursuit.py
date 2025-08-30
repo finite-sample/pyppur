@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 from pyppur.objectives import Objective
 from pyppur.objectives.base import BaseObjective
-from pyppur.objectives.distance import DistanceDistortionObjective
+from pyppur.objectives.distance import DistanceObjective
 from pyppur.objectives.reconstruction import ReconstructionObjective
 from pyppur.optimizers import ScipyOptimizer
 from pyppur.utils.metrics import (
@@ -168,7 +168,7 @@ class ProjectionPursuit:
             else:
                 weight_matrix = None
 
-            self._objective_func = DistanceDistortionObjective(
+            self._objective_func = DistanceObjective(
                 alpha=self.alpha, weight_by_distance=self.weight_by_distance
             )
             objective_kwargs = {"dist_X": dist_X, "weight_matrix": weight_matrix}
@@ -432,8 +432,10 @@ class ProjectionPursuit:
         # Project the data
         Z = self.transform(X)
 
-        # Compute trustworthiness
-        trust = compute_trustworthiness(X_scaled, Z, n_neighbors=n_neighbors)
+        # Compute trustworthiness (adjust n_neighbors if needed)
+        n_samples = X_scaled.shape[0]
+        effective_neighbors = min(n_neighbors, max(1, int(n_samples / 2) - 1))
+        trust = compute_trustworthiness(X_scaled, Z, n_neighbors=effective_neighbors)
 
         return trust
 
@@ -510,8 +512,12 @@ class ProjectionPursuit:
         # Reconstruction error
         metrics["reconstruction_error"] = self.reconstruction_error(X)
 
-        # Trustworthiness
-        metrics["trustworthiness"] = compute_trustworthiness(X_scaled, Z, n_neighbors)
+        # Trustworthiness (adjust n_neighbors if needed)
+        n_samples = X_scaled.shape[0]
+        effective_neighbors = min(n_neighbors, max(1, int(n_samples / 2) - 1))
+        metrics["trustworthiness"] = compute_trustworthiness(
+            X_scaled, Z, effective_neighbors
+        )
 
         # Silhouette score (if labels provided)
         if labels is not None:

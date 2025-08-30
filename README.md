@@ -112,10 +112,11 @@ Where:
 
 ## Requirements
 
-- Python 3.10+
-- NumPy
-- SciPy
-- scikit-learn
+- Python 3.8+
+- NumPy (>=1.20.0)
+- SciPy (>=1.7.0)  
+- scikit-learn (>=1.0.0)
+- matplotlib (>=3.3.0)
 
 ## License
 
@@ -130,7 +131,7 @@ If you use `pyppur` in your research, please cite it as:
   author = {Gaurav Sood},
   title = {pyppur: Python Projection Pursuit Unsupervised Reduction},
   url = {https://github.com/gojiplus/pyppur},
-  version = {0.1.0},
+  version = {0.2.0},
   year = {2025},
 }
 ```

@@ -110,7 +110,7 @@ def test_visualization_error_cases():
     embedding_4d = np.random.randn(20, 4)
     labels = np.random.randint(0, 2, size=20)
 
-    with pytest.raises(ValueError, match="Embedding must be 2D or 3D"):
+    with pytest.raises(ValueError, match="Can only plot 2D or 3D embeddings"):
         plot_embedding(embedding_4d, labels)
 
     # Test comparison with mismatched dimensions
@@ -141,8 +141,8 @@ def test_standardize_data_edge_cases():
     X_std_single, scaler_single = standardize_data(X_single, center=True, scale=True)
     assert X_std_single.shape == X_single.shape
 
-    # Test with different data using pre-fitted scaler
-    X_new = np.random.randn(5, 5)
+    # Test with different data using pre-fitted scaler (same number of features)
+    X_new = np.random.randn(5, 3)  # Same number of features as X_constant
     X_std_new, _ = standardize_data(X_new, scaler=scaler)
     assert X_std_new.shape == X_new.shape
 

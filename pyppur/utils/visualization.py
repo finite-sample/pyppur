@@ -148,17 +148,30 @@ def plot_reconstruction(X, X_recon, n_samples=3):
 
     # Plot original and reconstructed samples
     for i in range(n_samples):
-        # Original samples
-        original = X_viz[i].reshape(int(np.sqrt(X_viz.shape[1])), -1)
-        im1 = axes[0, i].imshow(original, cmap="viridis", norm=norm)
-        axes[0, i].set_title("Original")
-        axes[0, i].axis("off")
+        # Check if data can be reshaped to a square image
+        n_features = X_viz.shape[1]
+        sqrt_features = int(np.sqrt(n_features))
 
-        # Reconstructed samples
-        reconstructed = X_recon_viz[i].reshape(int(np.sqrt(X_recon_viz.shape[1])), -1)
-        im2 = axes[1, i].imshow(reconstructed, cmap="viridis", norm=norm)
-        axes[1, i].set_title("Reconstructed")
-        axes[1, i].axis("off")
+        if sqrt_features**2 == n_features:
+            # Square image data - reshape and plot as image
+            original = X_viz[i].reshape(sqrt_features, sqrt_features)
+            im1 = axes[0, i].imshow(original, cmap="viridis", norm=norm)
+            axes[0, i].set_title("Original")
+            axes[0, i].axis("off")
+
+            reconstructed = X_recon_viz[i].reshape(sqrt_features, sqrt_features)
+            im2 = axes[1, i].imshow(reconstructed, cmap="viridis", norm=norm)
+            axes[1, i].set_title("Reconstructed")
+            axes[1, i].axis("off")
+        else:
+            # Non-image data - plot as line plots
+            axes[0, i].plot(X_viz[i], "b-", alpha=0.7)
+            axes[0, i].set_title("Original")
+            axes[0, i].grid(True, alpha=0.3)
+
+            axes[1, i].plot(X_recon_viz[i], "r-", alpha=0.7)
+            axes[1, i].set_title("Reconstructed")
+            axes[1, i].grid(True, alpha=0.3)
 
     plt.tight_layout()
     return fig
@@ -191,16 +204,23 @@ def plot_comparison(
         Figure: matplotlib Figure object
     """
     n_plots = len(embeddings)
+
+    # Check that all embeddings have the same dimensionality
+    dimensions = [embedding.shape[1] for embedding in embeddings.values()]
+    if len(set(dimensions)) > 1:
+        raise ValueError("All embeddings must have the same number of dimensions")
+
+    # Check that dimensions are supported (2D or 3D)
+    embedding_dim = dimensions[0]
+    if embedding_dim not in (2, 3):
+        raise ValueError(f"Can only plot 2D or 3D embeddings, got {embedding_dim}D")
+
     fig, axes = plt.subplots(1, n_plots, figsize=figsize)
 
     if n_plots == 1:
         axes = [axes]
 
     for i, (name, embedding) in enumerate(embeddings.items()):
-        if embedding.shape[1] != 2:
-            raise ValueError(
-                f"Can only plot 2D embeddings, got {embedding.shape[1]}D for {name}"
-            )
 
         # Get metrics for this embedding if available
         plot_metrics = None

@@ -83,7 +83,7 @@ pip install dist/pyppur-*.whl  # Install built package
 
 ### Configuration Details
 
-**Python Requirements**: 3.8+ (configured for 3.10)
+**Python Requirements**: 3.8+ (CI tests on 3.8, 3.9, 3.10, 3.11)
 **Key Dependencies**: numpy, scipy, scikit-learn
 **Code Style**: Black formatter (88 char line length), isort for imports
 **Type Checking**: mypy with strict settings (disallow_untyped_defs = true)
