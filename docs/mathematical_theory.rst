@@ -180,7 +180,7 @@ Space Complexity
 * **Parameters**: :math:`O(p k)` for tied weights, :math:`O(2 p k)` for untied weights
 
 Theoretical Properties
----------------------
+----------------------
 
 Convergence
 ~~~~~~~~~~~
@@ -192,7 +192,7 @@ The optimization uses L-BFGS-B, which has the following properties:
 * **Multi-start**: Helps find better local optima
 
 Expressiveness
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 The ridge function autoencoder can represent a rich class of nonlinear transformations:
 
@@ -201,7 +201,7 @@ The ridge function autoencoder can represent a rich class of nonlinear transform
 * **Interpretability**: Each component corresponds to a direction in the original space
 
 Comparison to Related Methods
-----------------------------
+------------------------------
 
 vs. Linear PCA
 ~~~~~~~~~~~~~~
@@ -216,7 +216,7 @@ vs. Kernel PCA
 * **pyppur**: Explicit nonlinear mapping with learnable projections
 
 vs. Autoencoders
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 * **Neural autoencoders**: Multiple hidden layers with arbitrary activations
 * **pyppur**: Single hidden layer with tanh activation and structured constraints

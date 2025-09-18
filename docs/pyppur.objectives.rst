@@ -16,6 +16,7 @@ pyppur.objectives.base module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: BaseObjective, Objective
 
 pyppur.objectives.distance module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,6 +25,7 @@ pyppur.objectives.distance module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: DistanceObjective
 
 pyppur.objectives.reconstruction module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,3 +34,4 @@ pyppur.objectives.reconstruction module
    :members:
    :undoc-members:
    :show-inheritance:
+   :exclude-members: ReconstructionObjective

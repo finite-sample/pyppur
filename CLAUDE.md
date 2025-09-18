@@ -18,24 +18,34 @@ black pyppur/ tests/      # Format code with Black
 black --check pyppur/ tests/  # Check formatting without changing
 isort pyppur/ tests/      # Sort imports
 isort --check-only pyppur/ tests/  # Check import sorting
-mypy pyppur/ --ignore-missing-imports # Type checking
+# Note: mypy is disabled in CI (requires systematic type design work)
 ```
 
 ### Building and Installation
 ```bash
 pip install -e .          # Install in development mode
 pip install -e .[dev]     # Install with dev dependencies
+pip install -e .[docs]    # Install with documentation dependencies
 python -m build           # Build distribution packages
 python -m twine check dist/*  # Check package integrity
 pip install dist/pyppur-*.whl  # Install built package
 ```
 
+### Documentation
+```bash
+cd docs && make html      # Build documentation locally
+pip install -e .[docs]    # Install doc dependencies from pyproject.toml
+# All dependencies managed in pyproject.toml (no requirements.txt files)
+```
+
 ### CI/CD
 - GitHub Actions workflow runs on push/PR to main
 - Tests run on Python 3.10, 3.11, 3.12, 3.13
-- Code quality checks (Black, isort, mypy)
+- Code quality checks (Black, isort)
+- mypy disabled (requires systematic type design work)
 - Coverage reporting with Codecov
 - Package build verification
+- Documentation builds with GitHub Pages deployment
 
 ## Code Architecture
 
@@ -86,4 +96,6 @@ pip install dist/pyppur-*.whl  # Install built package
 **Python Requirements**: 3.10+ (CI tests on 3.10, 3.11, 3.12, 3.13)
 **Key Dependencies**: numpy, scipy, scikit-learn
 **Code Style**: Black formatter (88 char line length), isort for imports
-**Type Checking**: mypy with strict settings (disallow_untyped_defs = true)
+**Dependency Management**: All dependencies in pyproject.toml (no requirements.txt files)
+**Documentation**: Sphinx with importlib.metadata (no version duplication)
+**Type Checking**: mypy disabled in CI (requires systematic type design work)

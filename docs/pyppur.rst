@@ -16,24 +16,5 @@ Subpackages
    pyppur.optimizers
    pyppur.utils
 
-Main Classes
-------------
-
-ProjectionPursuit
-~~~~~~~~~~~~~~~~~
-
-.. autoclass:: pyppur.ProjectionPursuit
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Enums
------
-
-Objective
-~~~~~~~~~
-
-.. autoclass:: pyppur.Objective
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. note::
+   For detailed API documentation including methods and properties, see the :doc:`api_reference` page.
