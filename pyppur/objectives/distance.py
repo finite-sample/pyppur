@@ -20,14 +20,22 @@ class DistanceObjective(BaseObjective):
     ridge function nonlinearity before distance computation.
     """
 
-    def __init__(self, alpha: float = 1.0, weight_by_distance: bool = False, use_nonlinearity: bool = True, **kwargs):
+    def __init__(
+        self,
+        alpha: float = 1.0,
+        weight_by_distance: bool = False,
+        use_nonlinearity: bool = True,
+        **kwargs,
+    ):
         """
         Initialize the distance distortion objective.
 
         Args:
             alpha: Steepness parameter for the ridge function
-            weight_by_distance: Whether to weight distortion by inverse of original distances
-            use_nonlinearity: Whether to apply ridge function before computing distances
+            weight_by_distance: Whether to weight distortion by inverse of
+                original distances
+            use_nonlinearity: Whether to apply ridge function before computing
+                distances
             **kwargs: Additional keyword arguments
         """
         super().__init__(alpha=alpha, **kwargs)
@@ -69,15 +77,13 @@ class DistanceObjective(BaseObjective):
         # Create weight matrix if requested and not provided
         if self.weight_by_distance and weight_matrix is None:
             # Weight by inverse of distances (emphasize preserving small distances)
-            weight_matrix = 1.0 / (
-                dist_X + 0.1
-            )  # Add small constant to avoid division by zero
+            weight_matrix = 1.0 / (dist_X + 0.1)  # Add small constant
             np.fill_diagonal(weight_matrix, 0)  # Ignore self-distances
             weight_matrix = weight_matrix / weight_matrix.sum()  # Normalize
 
         # Project the data
         Y = X @ a_matrix.T
-        
+
         if self.use_nonlinearity:
             # Apply ridge function before computing distances
             Z = self.g(Y, self.alpha)

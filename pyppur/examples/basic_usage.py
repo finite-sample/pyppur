@@ -107,17 +107,17 @@ def digits_example():
 
     # Compare embeddings
     embeddings = {
-        "Dist (Nonlinear)": X_pp_dist_nl, 
+        "Dist (Nonlinear)": X_pp_dist_nl,
         "Dist (Linear)": X_pp_dist_linear,
-        "Recon (Tied)": X_pp_recon_tied, 
-        "Recon (Free)": X_pp_recon_free
+        "Recon (Tied)": X_pp_recon_tied,
+        "Recon (Free)": X_pp_recon_free,
     }
 
     metrics = {
         "Dist (Nonlinear)": metrics_dist_nl,
-        "Dist (Linear)": metrics_dist_linear, 
-        "Recon (Tied)": metrics_recon_tied, 
-        "Recon (Free)": metrics_recon_free
+        "Dist (Linear)": metrics_dist_linear,
+        "Recon (Tied)": metrics_recon_tied,
+        "Recon (Free)": metrics_recon_free,
     }
 
     # Plot comparison

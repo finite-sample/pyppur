@@ -20,27 +20,27 @@ ProjectionPursuit
    .. autosummary::
       :toctree: generated/
 
-      ~ProjectionPursuit.fit
-      ~ProjectionPursuit.transform
-      ~ProjectionPursuit.fit_transform
-      ~ProjectionPursuit.reconstruct
-      ~ProjectionPursuit.reconstruction_error
-      ~ProjectionPursuit.distance_distortion
-      ~ProjectionPursuit.compute_trustworthiness
-      ~ProjectionPursuit.compute_silhouette
-      ~ProjectionPursuit.evaluate
+      ~pyppur.ProjectionPursuit.fit
+      ~pyppur.ProjectionPursuit.transform
+      ~pyppur.ProjectionPursuit.fit_transform
+      ~pyppur.ProjectionPursuit.reconstruct
+      ~pyppur.ProjectionPursuit.reconstruction_error
+      ~pyppur.ProjectionPursuit.distance_distortion
+      ~pyppur.ProjectionPursuit.compute_trustworthiness
+      ~pyppur.ProjectionPursuit.compute_silhouette
+      ~pyppur.ProjectionPursuit.evaluate
 
    .. rubric:: Properties
 
    .. autosummary::
       :toctree: generated/
 
-      ~ProjectionPursuit.x_loadings_
-      ~ProjectionPursuit.decoder_weights_
-      ~ProjectionPursuit.loss_curve_
-      ~ProjectionPursuit.best_loss_
-      ~ProjectionPursuit.fit_time_
-      ~ProjectionPursuit.optimizer_info_
+      ~pyppur.ProjectionPursuit.x_loadings_
+      ~pyppur.ProjectionPursuit.decoder_weights_
+      ~pyppur.ProjectionPursuit.loss_curve_
+      ~pyppur.ProjectionPursuit.best_loss_
+      ~pyppur.ProjectionPursuit.fit_time_
+      ~pyppur.ProjectionPursuit.optimizer_info_
 
 Objective Types
 ~~~~~~~~~~~~~~~

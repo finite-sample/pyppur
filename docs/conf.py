@@ -5,7 +5,25 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))
+
+# Add the project root to Python path
+project_root = os.path.abspath('..')
+sys.path.insert(0, project_root)
+
+# Debug: Print sys.path and try importing
+if 'READTHEDOCS' not in os.environ:
+    print(f"Python path: {sys.path}")
+    try:
+        import pyppur
+        print(f"Successfully imported pyppur from {pyppur.__file__}")
+    except ImportError as e:
+        print(f"Failed to import pyppur: {e}")
+        # Try to import the main class directly
+        try:
+            from pyppur.projection_pursuit import ProjectionPursuit
+            print("Successfully imported ProjectionPursuit")
+        except ImportError as e2:
+            print(f"Failed to import ProjectionPursuit: {e2}")
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -47,6 +65,11 @@ autodoc_default_options = {
     'undoc-members': True,
     'exclude-members': '__weakref__'
 }
+
+# Handle import errors gracefully
+autodoc_mock_imports = []
+autodoc_typehints = 'description'
+autodoc_typehints_description_target = 'documented'
 
 # autosummary configuration
 autosummary_generate = True

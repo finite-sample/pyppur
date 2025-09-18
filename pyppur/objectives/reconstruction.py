@@ -18,14 +18,22 @@ class ReconstructionObjective(BaseObjective):
     (encoder=decoder) and free decoder configurations.
     """
 
-    def __init__(self, alpha: float = 1.0, tied_weights: bool = True, l2_reg: float = 0.0, **kwargs):
+    def __init__(
+        self,
+        alpha: float = 1.0,
+        tied_weights: bool = True,
+        l2_reg: float = 0.0,
+        **kwargs,
+    ):
         """
         Initialize the reconstruction objective.
 
         Args:
             alpha: Steepness parameter for the ridge function
-            tied_weights: If True, use tied weights (B=A). If False, learn separate decoder B
-            l2_reg: L2 regularization strength for decoder weights (when tied_weights=False)
+            tied_weights: If True, use tied weights (B=A). If False, learn separate
+                decoder B
+            l2_reg: L2 regularization strength for decoder weights (when
+                tied_weights=False)
             **kwargs: Additional keyword arguments
         """
         super().__init__(alpha=alpha, **kwargs)
@@ -46,7 +54,7 @@ class ReconstructionObjective(BaseObjective):
             float: Reconstruction loss value (to be minimized)
         """
         n_features = X.shape[1]
-        
+
         if self.tied_weights:
             # Tied weights: only encoder parameters
             a_matrix = a_flat.reshape(k, n_features)
@@ -56,17 +64,17 @@ class ReconstructionObjective(BaseObjective):
             # Untied weights: encoder A and decoder B parameters
             total_encoder_params = k * n_features
             total_decoder_params = k * n_features
-            
+
             if len(a_flat) != total_encoder_params + total_decoder_params:
                 raise ValueError(
-                    f"Expected {total_encoder_params + total_decoder_params} parameters for untied weights, "
-                    f"got {len(a_flat)}"
+                    f"Expected {total_encoder_params + total_decoder_params} "
+                    f"parameters for untied weights, got {len(a_flat)}"
                 )
-            
+
             # Split parameters
             a_matrix = a_flat[:total_encoder_params].reshape(k, n_features)
             b_matrix = a_flat[total_encoder_params:].reshape(k, n_features)
-            
+
             # Note: Normalization is now handled in the optimizer, not here
 
         # Project the data
@@ -77,14 +85,16 @@ class ReconstructionObjective(BaseObjective):
 
         # Mean squared reconstruction error
         loss = np.mean((X - X_hat) ** 2)
-        
+
         # Add L2 regularization for decoder (when untied)
         if not self.tied_weights and self.l2_reg > 0:
-            loss += self.l2_reg * np.mean(b_matrix ** 2)
+            loss += self.l2_reg * np.mean(b_matrix**2)
 
         return loss
 
-    def reconstruct(self, X: np.ndarray, a_matrix: np.ndarray, b_matrix: Optional[np.ndarray] = None) -> np.ndarray:
+    def reconstruct(
+        self, X: np.ndarray, a_matrix: np.ndarray, b_matrix: Optional[np.ndarray] = None
+    ) -> np.ndarray:
         """
         Reconstruct data from projections.
 

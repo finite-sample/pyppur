@@ -28,7 +28,7 @@ jobs:
     
     - name: Lint with black
       run: |
-        python -m black --check pyppur/ tests/
+        python -m black --check --line-length 88 pyppur/ tests/
     
     - name: Check imports with isort
       run: |
