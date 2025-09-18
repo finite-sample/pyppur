@@ -147,8 +147,21 @@ class ScipyOptimizer(BaseOptimizer):
                     f"{'untied' if is_untied else 'tied'} weights"
                 )
 
-        # Set up optimization options
-        options = {"maxiter": self.max_iter, "gtol": self.tol, "disp": self.verbose}
+        # Set up optimization options based on method
+        if self.method == "L-BFGS-B":
+            options = {
+                "maxfun": self.max_iter * 100,  # Max function evaluations
+                "gtol": self.tol,                # Gradient tolerance
+                "ftol": 2.2e-9,                  # Function tolerance
+            }
+        elif self.method == "SLSQP":
+            options = {
+                "maxiter": self.max_iter,       # Max iterations
+                "ftol": self.tol,               # Function tolerance
+            }
+        else:
+            # Default options for other methods
+            options = {"maxiter": self.max_iter}
 
         # Additional options from kwargs
         options.update(self.kwargs.get("options", {}))
