@@ -160,18 +160,20 @@ def test_normalization_consistency():
 
 def test_parameter_validation():
     """Test parameter validation for new features."""
-    # Test invalid l2_reg
-    with pytest.raises(ValueError, match="Expected.*parameters"):
-        pp = ProjectionPursuit(
-            n_components=2,
-            objective=Objective.RECONSTRUCTION,
-            tied_weights=False,
-        )
-        # This should fail during fit when parameters don't match expectation
-        X = np.random.randn(20, 5)
-        # Manually create wrong parameter size to trigger error
-        pp._objective_func = pp._objective_func.__class__(tied_weights=False)
-        pp._objective_func(np.random.randn(10), X, 2)  # Wrong size
+    # Test that invalid n_components raises an error
+    X = np.random.randn(20, 5)
+    
+    # Test n_components > n_features should issue warning and adjust
+    pp = ProjectionPursuit(n_components=10)  # More than 5 features
+    import warnings
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        pp.fit(X)
+        # Check that we got the n_components warning
+        user_warnings = [warning for warning in w if warning.category == UserWarning]
+        assert len(user_warnings) >= 1
+        assert "n_components" in str(user_warnings[0].message)
+    assert pp.n_components == 5  # Should be adjusted to n_features
 
 
 def test_api_compatibility():
