@@ -151,13 +151,13 @@ class ScipyOptimizer(BaseOptimizer):
         if self.method == "L-BFGS-B":
             options = {
                 "maxfun": self.max_iter * 100,  # Max function evaluations
-                "gtol": self.tol,                # Gradient tolerance
-                "ftol": 2.2e-9,                  # Function tolerance
+                "gtol": self.tol,  # Gradient tolerance
+                "ftol": 2.2e-9,  # Function tolerance
             }
         elif self.method == "SLSQP":
             options = {
-                "maxiter": self.max_iter,       # Max iterations
-                "ftol": self.tol,               # Function tolerance
+                "maxiter": self.max_iter,  # Max iterations
+                "ftol": self.tol,  # Function tolerance
             }
         else:
             # Default options for other methods
