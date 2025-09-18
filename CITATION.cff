@@ -1,0 +1,35 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "pyppur: Python Projection Pursuit Unsupervised Reduction"
+abstract: "Advanced Projection Pursuit implementation with tied/untied weights, nonlinear/linear distance distortion, and comprehensive documentation"
+authors:
+  - family-names: Sood
+    given-names: Gaurav
+    email: gsood07@gmail.com
+version: "0.3.1"
+date-released: "2025-01-18"
+license: MIT
+repository-code: "https://github.com/gojiplus/pyppur"
+url: "https://github.com/gojiplus/pyppur"
+keywords:
+  - "dimensionality reduction"
+  - "projection pursuit"
+  - "machine learning"
+  - "unsupervised learning"
+  - "ridge functions"
+  - "autoencoder"
+  - "distance distortion"
+  - "scikit-learn"
+preferred-citation:
+  type: software
+  title: "pyppur: Python Projection Pursuit Unsupervised Reduction"
+  authors:
+    - family-names: Sood
+      given-names: Gaurav
+      email: gsood07@gmail.com
+  version: "0.3.1"
+  date-released: "2025-01-18"
+  license: MIT
+  repository-code: "https://github.com/gojiplus/pyppur"
+  url: "https://github.com/gojiplus/pyppur"
