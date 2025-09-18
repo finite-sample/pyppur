@@ -1,6 +1,7 @@
 """
 Distance distortion objective for projection pursuit.
 """
+
 from typing import Any, Dict, Optional
 
 import numpy as np
@@ -15,20 +16,23 @@ class DistanceObjective(BaseObjective):
     Distance distortion objective function for projection pursuit.
 
     This objective minimizes the difference between pairwise distances
-    in the original space and the projected space.
+    in the original space and the projected space. Can optionally apply
+    ridge function nonlinearity before distance computation.
     """
 
-    def __init__(self, alpha: float = 1.0, weight_by_distance: bool = False, **kwargs):
+    def __init__(self, alpha: float = 1.0, weight_by_distance: bool = False, use_nonlinearity: bool = True, **kwargs):
         """
         Initialize the distance distortion objective.
 
         Args:
             alpha: Steepness parameter for the ridge function
             weight_by_distance: Whether to weight distortion by inverse of original distances
+            use_nonlinearity: Whether to apply ridge function before computing distances
             **kwargs: Additional keyword arguments
         """
         super().__init__(alpha=alpha, **kwargs)
         self.weight_by_distance = weight_by_distance
+        self.use_nonlinearity = use_nonlinearity
 
     def __call__(
         self,
@@ -56,8 +60,7 @@ class DistanceObjective(BaseObjective):
         # Reshape the flat parameter vector into a matrix
         a_matrix = a_flat.reshape(k, X.shape[1])
 
-        # Normalize projection directions
-        a_matrix = a_matrix / np.linalg.norm(a_matrix, axis=1, keepdims=True)
+        # Note: Normalization is now handled in the optimizer, not here
 
         # Compute distances in original space if not provided
         if dist_X is None:
@@ -73,7 +76,14 @@ class DistanceObjective(BaseObjective):
             weight_matrix = weight_matrix / weight_matrix.sum()  # Normalize
 
         # Project the data
-        Z = self.g(X @ a_matrix.T, self.alpha)
+        Y = X @ a_matrix.T
+        
+        if self.use_nonlinearity:
+            # Apply ridge function before computing distances
+            Z = self.g(Y, self.alpha)
+        else:
+            # Use linear projections for distance computation
+            Z = Y
 
         # Compute distances in projection space
         dist_Z = squareform(pdist(Z, metric="euclidean"))

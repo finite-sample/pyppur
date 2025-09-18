@@ -2,6 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/pyppur.svg)](https://pypi.org/project/pyppur/)
 [![PyPI Downloads](https://static.pepy.tech/badge/pyppur)](https://pepy.tech/projects/pyppur)
+[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://gojiplus.github.io/pyppur/)
 
 ## Overview
 
@@ -48,19 +49,31 @@ pp_dist = ProjectionPursuit(
 # Fit and transform
 X_transformed = pp_dist.fit_transform(X)
 
-# Projection pursuit with reconstruction loss
-pp_recon = ProjectionPursuit(
+# Projection pursuit with reconstruction loss (tied weights)
+pp_recon_tied = ProjectionPursuit(
     n_components=2,
     objective=Objective.RECONSTRUCTION,
-    alpha=1.0
+    alpha=1.0,
+    tied_weights=True
+)
+
+# Projection pursuit with reconstruction loss (free decoder)
+pp_recon_free = ProjectionPursuit(
+    n_components=2,
+    objective=Objective.RECONSTRUCTION,
+    alpha=1.0,
+    tied_weights=False,
+    l2_reg=0.01
 )
 
 # Fit and transform
-X_transformed_recon = pp_recon.fit_transform(X)
+X_transformed_recon_tied = pp_recon_tied.fit_transform(X)
+X_transformed_recon_free = pp_recon_free.fit_transform(X)
 
 # Evaluate the methods
 dist_metrics = pp_dist.evaluate(X, y)
-recon_metrics = pp_recon.evaluate(X, y)
+recon_tied_metrics = pp_recon_tied.evaluate(X, y)
+recon_free_metrics = pp_recon_free.evaluate(X, y)
 
 print("Distance distortion method:")
 print(f"  Trustworthiness: {dist_metrics['trustworthiness']:.4f}")
@@ -68,11 +81,17 @@ print(f"  Silhouette: {dist_metrics['silhouette']:.4f}")
 print(f"  Distance distortion: {dist_metrics['distance_distortion']:.4f}")
 print(f"  Reconstruction error: {dist_metrics['reconstruction_error']:.4f}")
 
-print("\nReconstruction method:")
-print(f"  Trustworthiness: {recon_metrics['trustworthiness']:.4f}")
-print(f"  Silhouette: {recon_metrics['silhouette']:.4f}")
-print(f"  Distance distortion: {recon_metrics['distance_distortion']:.4f}")
-print(f"  Reconstruction error: {recon_metrics['reconstruction_error']:.4f}")
+print("\nReconstruction method (tied weights):")
+print(f"  Trustworthiness: {recon_tied_metrics['trustworthiness']:.4f}")
+print(f"  Silhouette: {recon_tied_metrics['silhouette']:.4f}")
+print(f"  Distance distortion: {recon_tied_metrics['distance_distortion']:.4f}")
+print(f"  Reconstruction error: {recon_tied_metrics['reconstruction_error']:.4f}")
+
+print("\nReconstruction method (free decoder):")
+print(f"  Trustworthiness: {recon_free_metrics['trustworthiness']:.4f}")
+print(f"  Silhouette: {recon_free_metrics['silhouette']:.4f}")
+print(f"  Distance distortion: {recon_free_metrics['distance_distortion']:.4f}")
+print(f"  Reconstruction error: {recon_free_metrics['reconstruction_error']:.4f}")
 ```
 
 
@@ -94,21 +113,34 @@ The main class in `pyppur` is `ProjectionPursuit`, which provides the following 
 
 Projection pursuit finds interesting low-dimensional projections of multivariate data. When used for dimensionality reduction, it aims to optimize an "interestingness" index which can be:
 
-1. **Distance Distortion**: Minimizes the difference between pairwise distances in original and projected spaces
+1. **Distance Distortion**: Minimizes the difference between pairwise distances in original and projected spaces (optionally with nonlinearity)
 2. **Reconstruction Error**: Minimizes the error when reconstructing the data using ridge functions
 
-The mathematical formulation for the ridge function autoencoder is:
+### Mathematical Formulations
 
+#### Tied-Weights Ridge Autoencoder (Default)
 ```
-z_i = a_j^T x_i
-x̂_i = ∑_j g(z_i) a_j
+Z = g(X A^T)
+X̂ = Z A
+```
+
+#### Free Decoder Ridge Autoencoder (Available with tied_weights=False)
+```
+Z = g(X A^T)  
+X̂ = Z B
 ```
 
 Where:
-- `x_i` is the input data point
-- `a_j` are the projection directions
-- `g(z)` is the ridge function (tanh in our implementation)
-- `x̂_i` is the reconstructed data point
+- `X` is the input data matrix (n_samples × n_features)
+- `A` are the encoder projection directions (n_components × n_features)
+- `B` are the decoder weights (n_components × n_features, when untied)
+- `g(z) = tanh(α * z)` is the ridge function with steepness parameter α
+- `Z` is the projected data (n_samples × n_components)
+- `X̂` is the reconstructed data
+
+#### Distance Distortion Options
+- **With nonlinearity**: Compares distances between original space and `g(X A^T)`
+- **Without nonlinearity**: Compares distances between original space and linear projections `X A^T`
 
 ## Requirements
 

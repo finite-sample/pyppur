@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-09-18
+
+### Added
+- **Free decoder option for reconstruction objective** (`tied_weights=False`)
+  - Separate encoder and decoder matrices for better reconstruction
+  - Optional L2 regularization on decoder weights (`l2_reg` parameter)
+  - New `decoder_weights_` property to access decoder matrix
+- **Optional nonlinearity in distance distortion** (`use_nonlinearity_in_distance=False`)
+  - Option to use linear projections for distance preservation
+  - Better alignment with classical multidimensional scaling
+- **Comprehensive Sphinx documentation**
+  - Professional documentation site with GitHub Pages deployment
+  - Mathematical theory section with LaTeX equations
+  - Detailed API reference with auto-generated docstrings
+  - Getting started guide and comprehensive examples
+  - Automated documentation building via GitHub Actions
+
+### Fixed
+- **Normalization handling in optimization**
+  - Moved normalization from objective functions to optimizer
+  - Eliminates scale invariance and flat directions in optimization
+  - Improved convergence behavior and stability
+- **Mathematical correctness**
+  - Fixed tied-weights reconstruction formula implementation
+  - Proper parameter handling for untied weights in optimizer
+  - Consistent normalization across all methods
+
+### Changed
+- **Enhanced API with backward compatibility**
+  - All existing code continues to work unchanged
+  - New parameters have sensible defaults
+  - Improved parameter validation and error messages
+- **Updated mathematical formulations in documentation**
+  - Clarified tied vs untied weight formulations
+  - Fixed notation inconsistencies in README theory section
+  - Added comprehensive mathematical theory documentation
+
+### Documentation
+- Added complete Sphinx documentation with RTD theme
+- GitHub Actions workflow for automatic documentation deployment
+- Mathematical equations rendered with MathJax
+- Cross-referenced API documentation
+- Comprehensive examples and tutorials
+
 ## [0.2.0] - 2025-01-30
 
 ### Added

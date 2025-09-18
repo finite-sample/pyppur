@@ -46,6 +46,9 @@ class ProjectionPursuit:
         center (bool): Whether to center the data
         scale (bool): Whether to scale the data
         weight_by_distance (bool): Whether to weight distance distortion by inverse of original distances
+        tied_weights (bool): Whether to use tied weights (encoder=decoder) for reconstruction
+        l2_reg (float): L2 regularization strength for decoder weights (when tied_weights=False)
+        use_nonlinearity_in_distance (bool): Whether to apply ridge function before computing distances
     """
 
     def __init__(
@@ -62,6 +65,9 @@ class ProjectionPursuit:
         center: bool = True,
         scale: bool = True,
         weight_by_distance: bool = False,
+        tied_weights: bool = True,
+        l2_reg: float = 0.0,
+        use_nonlinearity_in_distance: bool = True,
     ):
         """
         Initialize a ProjectionPursuit model.
@@ -79,6 +85,9 @@ class ProjectionPursuit:
             center: Whether to center the data
             scale: Whether to scale the data
             weight_by_distance: Whether to weight distance distortion by inverse of original distances
+            tied_weights: Whether to use tied weights (encoder=decoder) for reconstruction
+            l2_reg: L2 regularization strength for decoder weights (when tied_weights=False)
+            use_nonlinearity_in_distance: Whether to apply ridge function before computing distances
         """
         self.n_components = n_components
 
@@ -103,10 +112,14 @@ class ProjectionPursuit:
         self.center = center
         self.scale = scale
         self.weight_by_distance = weight_by_distance
+        self.tied_weights = tied_weights
+        self.l2_reg = l2_reg
+        self.use_nonlinearity_in_distance = use_nonlinearity_in_distance
 
         # Private attributes
         self._fitted = False
         self._x_loadings: Optional[np.ndarray] = None
+        self._decoder_weights: Optional[np.ndarray] = None  # For untied weights
         self._scaler: Optional[StandardScaler] = None
         self._loss_curve: List[float] = []
         self._best_loss = np.inf
@@ -153,7 +166,11 @@ class ProjectionPursuit:
 
         # Initialize objective function
         if self.objective == Objective.RECONSTRUCTION:
-            self._objective_func = ReconstructionObjective(alpha=self.alpha)
+            self._objective_func = ReconstructionObjective(
+                alpha=self.alpha,
+                tied_weights=self.tied_weights,
+                l2_reg=self.l2_reg
+            )
         else:  # DISTANCE_DISTORTION
             # Compute pairwise distances for distance distortion
             dist_X = squareform(pdist(X_scaled, metric="euclidean"))
@@ -169,7 +186,9 @@ class ProjectionPursuit:
                 weight_matrix = None
 
             self._objective_func = DistanceObjective(
-                alpha=self.alpha, weight_by_distance=self.weight_by_distance
+                alpha=self.alpha, 
+                weight_by_distance=self.weight_by_distance,
+                use_nonlinearity=self.use_nonlinearity_in_distance
             )
             objective_kwargs = {"dist_X": dist_X, "weight_matrix": weight_matrix}
 
@@ -184,6 +203,12 @@ class ProjectionPursuit:
         pca = PCA(n_components=self.n_components)
         _ = pca.fit_transform(X_scaled)
         a0_pca = pca.components_  # Use PCA directions as starting point
+        
+        # For untied weights, initialize decoder as well
+        if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
+            # Initialize decoder with small random values
+            b0_pca = np.random.randn(self.n_components, n_features) * 0.1
+            a0_pca = np.concatenate([a0_pca.flatten(), b0_pca.flatten()])
 
         # Create optimizer
         optimizer = ScipyOptimizer(
@@ -223,6 +248,11 @@ class ProjectionPursuit:
             # Normalize each direction
             norms = np.linalg.norm(a0_random, axis=1, keepdims=True)
             a0_random = a0_random / norms
+            
+            # For untied weights, initialize decoder as well
+            if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
+                b0_random = np.random.randn(self.n_components, n_features) * 0.1
+                a0_random = np.concatenate([a0_random.flatten(), b0_random.flatten()])
 
             # Run optimization with random initialization
             if self.objective == Objective.RECONSTRUCTION:
@@ -245,7 +275,21 @@ class ProjectionPursuit:
 
         # Store the best result
         self._best_loss = best_loss
-        self._x_loadings = best_a
+        
+        # Handle storage for tied vs untied weights
+        if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
+            # For untied weights, best_a contains both encoder and decoder
+            n_encoder_params = self.n_components * n_features
+            self._x_loadings = best_a[:n_encoder_params].reshape(self.n_components, n_features)
+            self._decoder_weights = best_a[n_encoder_params:].reshape(self.n_components, n_features)
+        else:
+            # For tied weights or distance distortion, just encoder
+            if isinstance(best_a, np.ndarray) and best_a.ndim == 1:
+                self._x_loadings = best_a[:self.n_components * n_features].reshape(self.n_components, n_features)
+            else:
+                self._x_loadings = best_a
+            self._decoder_weights = None
+            
         self._fitted = True
         self._fit_time = time.time() - start_time
 
@@ -280,7 +324,10 @@ class ProjectionPursuit:
 
         # Project the data using the optimal projection directions
         assert self._x_loadings is not None
-        Z = X_scaled @ self._x_loadings.T
+        
+        # Normalize encoder directions
+        x_loadings_normalized = self._x_loadings / np.linalg.norm(self._x_loadings, axis=1, keepdims=True)
+        Z = X_scaled @ x_loadings_normalized.T
 
         # Apply ridge function
         assert self._objective_func is not None
@@ -331,13 +378,17 @@ class ProjectionPursuit:
         # Reconstruct the data
         assert self._x_loadings is not None
         assert self._objective_func is not None
+        
+        # Normalize encoder directions
+        x_loadings_normalized = self._x_loadings / np.linalg.norm(self._x_loadings, axis=1, keepdims=True)
+        
         if isinstance(self._objective_func, ReconstructionObjective):
-            X_hat = self._objective_func.reconstruct(X_scaled, self._x_loadings)
+            X_hat = self._objective_func.reconstruct(X_scaled, x_loadings_normalized, self._decoder_weights)
         else:
             # For distance distortion, manually reconstruct
-            Z = X_scaled @ self._x_loadings.T
+            Z = X_scaled @ x_loadings_normalized.T
             G = self._objective_func.g(Z, self.alpha)
-            X_hat = G @ self._x_loadings
+            X_hat = G @ x_loadings_normalized
 
         # Inverse transform if scaling was applied
         if self._scaler is not None:
@@ -389,7 +440,16 @@ class ProjectionPursuit:
         dist_X = squareform(pdist(X_scaled, metric="euclidean"))
 
         # Project and compute distances in projected space
-        Z = self.transform(X)
+        # Use the same logic as in transform but respect the distance objective setting
+        assert self._x_loadings is not None
+        x_loadings_normalized = self._x_loadings / np.linalg.norm(self._x_loadings, axis=1, keepdims=True)
+        Y = X_scaled @ x_loadings_normalized.T
+        
+        if self.use_nonlinearity_in_distance:
+            Z = self._objective_func.g(Y, self.alpha)
+        else:
+            Z = Y
+            
         dist_Z = squareform(pdist(Z, metric="euclidean"))
 
         # Compute distance distortion
@@ -528,7 +588,7 @@ class ProjectionPursuit:
     @property
     def x_loadings_(self) -> np.ndarray:
         """
-        Get the projection directions.
+        Get the projection directions (encoder).
 
         Returns:
             np.ndarray: Projection directions, shape (n_components, n_features)
@@ -540,6 +600,22 @@ class ProjectionPursuit:
             )
         assert self._x_loadings is not None
         return self._x_loadings
+    
+    @property
+    def decoder_weights_(self) -> Optional[np.ndarray]:
+        """
+        Get the decoder weights (for untied weights only).
+
+        Returns:
+            np.ndarray or None: Decoder weights, shape (n_components, n_features), 
+                               or None if using tied weights
+        """
+        if not self._fitted:
+            raise ValueError(
+                "This ProjectionPursuit instance is not fitted yet. "
+                "Call 'fit' before using this method."
+            )
+        return self._decoder_weights
 
     @property
     def loss_curve_(self) -> List[float]:
