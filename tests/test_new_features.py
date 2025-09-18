@@ -162,10 +162,11 @@ def test_parameter_validation():
     """Test parameter validation for new features."""
     # Test that invalid n_components raises an error
     X = np.random.randn(20, 5)
-    
+
     # Test n_components > n_features should issue warning and adjust
     pp = ProjectionPursuit(n_components=10)  # More than 5 features
     import warnings
+
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         pp.fit(X)

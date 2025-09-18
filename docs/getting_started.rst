@@ -21,7 +21,7 @@ For development, you can install from source with development dependencies:
 Requirements
 ~~~~~~~~~~~~
 
-* Python 3.8+
+* Python 3.10+
 * NumPy (>=1.20.0)
 * SciPy (>=1.7.0)  
 * scikit-learn (>=1.0.0)

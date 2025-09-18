@@ -32,7 +32,7 @@ pip install dist/pyppur-*.whl  # Install built package
 
 ### CI/CD
 - GitHub Actions workflow runs on push/PR to main
-- Tests run on Python 3.8, 3.9, 3.10, 3.11
+- Tests run on Python 3.10, 3.11, 3.12, 3.13
 - Code quality checks (Black, isort, mypy)
 - Coverage reporting with Codecov
 - Package build verification
@@ -83,7 +83,7 @@ pip install dist/pyppur-*.whl  # Install built package
 
 ### Configuration Details
 
-**Python Requirements**: 3.8+ (CI tests on 3.8, 3.9, 3.10, 3.11)
+**Python Requirements**: 3.10+ (CI tests on 3.10, 3.11, 3.12, 3.13)
 **Key Dependencies**: numpy, scipy, scikit-learn
 **Code Style**: Black formatter (88 char line length), isort for imports
 **Type Checking**: mypy with strict settings (disallow_untyped_defs = true)

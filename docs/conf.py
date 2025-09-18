@@ -28,10 +28,33 @@ if 'READTHEDOCS' not in os.environ:
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'pyppur'
-copyright = '2025, Gaurav Sood'
-author = 'Gaurav Sood'
-release = '0.3.0'
+# Read metadata from installed package to avoid duplication with pyproject.toml
+import datetime
+
+try:
+    from importlib.metadata import metadata
+    pkg_metadata = metadata('pyppur')
+    project = pkg_metadata['Name']
+    # Author might be in 'Author' or parsed from 'Author-email'
+    author = pkg_metadata.get('Author') or pkg_metadata.get('Author-email', '').split(' <')[0]
+    release = pkg_metadata['Version']
+    version = '.'.join(release.split('.')[:2])  # Major.minor version
+except Exception:
+    # Fallback: parse pyproject.toml directly if package not installed
+    import tomllib
+    import pathlib
+    
+    pyproject_path = pathlib.Path(__file__).parent.parent / 'pyproject.toml'
+    with open(pyproject_path, 'rb') as f:
+        pyproject_data = tomllib.load(f)
+    
+    project_info = pyproject_data['project']
+    project = project_info['name']
+    author = project_info['authors'][0]['name']
+    release = project_info['version']
+    version = '.'.join(release.split('.')[:2])
+
+copyright = f'{datetime.date.today().year}, {author}'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
