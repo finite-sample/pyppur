@@ -2,7 +2,7 @@
 Distance distortion objective for projection pursuit.
 """
 
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform

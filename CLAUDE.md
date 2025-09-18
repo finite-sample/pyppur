@@ -14,10 +14,10 @@ pytest --cov=pyppur --cov-report=term-missing # Run tests with coverage
 
 ### Code Quality
 ```bash
-black pyppur/ tests/      # Format code with Black
-black --check pyppur/ tests/  # Check formatting without changing
-isort pyppur/ tests/      # Sort imports
-isort --check-only pyppur/ tests/  # Check import sorting
+ruff check pyppur/ tests/ # Lint code with Ruff
+ruff check --fix pyppur/ tests/  # Fix linting issues automatically
+ruff format pyppur/ tests/  # Format code with Ruff
+ruff format --check pyppur/ tests/  # Check formatting without changing
 # Note: mypy is disabled in CI (requires systematic type design work)
 ```
 
@@ -41,9 +41,9 @@ pip install -e .[docs]    # Install doc dependencies from pyproject.toml
 ### CI/CD
 - GitHub Actions workflow runs on push/PR to main
 - Tests run on Python 3.10, 3.11, 3.12, 3.13
-- Code quality checks (Black, isort)
+- Code quality checks (Ruff for linting and formatting)
 - mypy disabled (requires systematic type design work)
-- Coverage reporting with Codecov
+- Coverage reporting in terminal
 - Package build verification
 - Documentation builds with GitHub Pages deployment
 
@@ -95,7 +95,7 @@ pip install -e .[docs]    # Install doc dependencies from pyproject.toml
 
 **Python Requirements**: 3.10+ (CI tests on 3.10, 3.11, 3.12, 3.13)
 **Key Dependencies**: numpy, scipy, scikit-learn
-**Code Style**: Black formatter (88 char line length), isort for imports
+**Code Style**: Ruff for linting and formatting (88 char line length)
 **Dependency Management**: All dependencies in pyproject.toml (no requirements.txt files)
 **Documentation**: Sphinx with importlib.metadata (no version duplication)
 **Type Checking**: mypy disabled in CI (requires systematic type design work)

@@ -2,7 +2,7 @@
 Reconstruction loss objective for projection pursuit.
 """
 
-from typing import Any, Dict, Optional
+from typing import Optional
 
 import numpy as np
 

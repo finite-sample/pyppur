@@ -2,7 +2,6 @@
 Tests for the objectives module.
 """
 
-import numpy as np
 import pytest
 
 from pyppur.objectives import Objective

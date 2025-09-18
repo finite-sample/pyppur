@@ -3,12 +3,11 @@ Basic usage examples for pyppur.
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
 from sklearn.datasets import load_digits
 from sklearn.preprocessing import StandardScaler
 
 from pyppur import Objective, ProjectionPursuit
-from pyppur.utils.visualization import plot_comparison, plot_embedding
+from pyppur.utils.visualization import plot_comparison
 
 
 def digits_example():

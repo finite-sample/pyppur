@@ -4,7 +4,6 @@ Tests for new features: untied weights, nonlinearity options, and improved norma
 
 import numpy as np
 import pytest
-from sklearn.datasets import make_swiss_roll
 from sklearn.preprocessing import StandardScaler
 
 from pyppur import Objective, ProjectionPursuit

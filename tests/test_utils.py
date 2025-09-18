@@ -2,11 +2,8 @@
 Tests for the utils module.
 """
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
-from sklearn.datasets import load_digits
-from sklearn.preprocessing import StandardScaler
 
 from pyppur.utils.metrics import (
     compute_distance_distortion,
@@ -18,7 +15,6 @@ from pyppur.utils.preprocessing import standardize_data
 from pyppur.utils.visualization import (
     plot_comparison,
     plot_embedding,
-    plot_reconstruction,
 )
 
 

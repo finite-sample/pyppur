@@ -2,7 +2,7 @@
 Visualization utilities for projection pursuit results.
 """
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -41,7 +41,7 @@ def plot_embedding(
     """
     if X_embedded.shape[1] not in (2, 3):
         raise ValueError(
-            "Can only plot 2D or 3D embeddings, " f"got {X_embedded.shape[1]}D"
+            f"Can only plot 2D or 3D embeddings, got {X_embedded.shape[1]}D"
         )
 
     is_3d = X_embedded.shape[1] == 3
@@ -139,7 +139,6 @@ def plot_reconstruction(X, X_recon, n_samples=3):
     fig, axes = plt.subplots(2, n_samples, figsize=(n_samples * 3, 6))
 
     # Normalize for consistent color scaling
-    from matplotlib.colors import Normalize
 
     norm = Normalize(
         vmin=min(X_viz.min(), X_recon_viz.min()),
@@ -221,7 +220,6 @@ def plot_comparison(
         axes = [axes]
 
     for i, (name, embedding) in enumerate(embeddings.items()):
-
         # Get metrics for this embedding if available
         plot_metrics = None
         if metrics is not None and name in metrics:

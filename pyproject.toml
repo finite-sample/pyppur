@@ -38,9 +38,8 @@ dependencies = [
 dev = [
     "pytest>=6.0.0",
     "pytest-cov>=2.12.0",
-    "black>=22.0.0",
+    "ruff>=0.1.0",
     "mypy>=1.0.0",
-    "isort>=5.9.0",
     "build>=0.7.0",
     "twine>=4.0.0",
 ]
@@ -59,13 +58,37 @@ docs = [
 where = ["."]
 include = ["pyppur*"]
 
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ["py310"]
+target-version = "py310"
 
-[tool.isort]
-profile = "black"
-line_length = 88
+[tool.ruff.lint]
+# Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
+select = ["E", "F", "I"]  # E/F for flake8, I for isort
+ignore = []
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Per-file ignores for common ML/matplotlib patterns
+[tool.ruff.lint.per-file-ignores]
+"pyppur/examples/*.py" = ["F841"]  # Allow unused variables in examples
+"tests/*.py" = ["F841"]  # Allow unused variables in tests  
+"pyppur/utils/visualization.py" = ["F841"]  # Allow unused fig objects
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
 
 [tool.mypy]
 python_version = "3.10"

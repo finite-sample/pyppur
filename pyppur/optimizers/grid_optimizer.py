@@ -2,7 +2,6 @@
 Grid-based optimizer for projection pursuit.
 """
 
-from itertools import product
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -114,7 +113,7 @@ class GridOptimizer(BaseOptimizer):
         # Optimize each direction sequentially
         for component in range(self.n_components):
             if self.verbose:
-                print(f"Optimizing component {component+1}/{self.n_components}")
+                print(f"Optimizing component {component + 1}/{self.n_components}")
 
             best_loss = np.inf
             best_direction = None
@@ -151,7 +150,7 @@ class GridOptimizer(BaseOptimizer):
             # Perform iterations to refine the direction
             for iteration in range(self.n_iterations):
                 if self.verbose:
-                    print(f"  Iteration {iteration+1}/{self.n_iterations}")
+                    print(f"  Iteration {iteration + 1}/{self.n_iterations}")
 
                 # Generate random directions
                 if iteration == 0 and best_direction is None:
@@ -205,7 +204,7 @@ class GridOptimizer(BaseOptimizer):
             loss_values.append(best_loss)
 
             if self.verbose:
-                print(f"  Component {component+1} optimized, loss: {best_loss}")
+                print(f"  Component {component + 1} optimized, loss: {best_loss}")
 
         # Final evaluation with all components
         objective_args = (

@@ -4,7 +4,7 @@ Main implementation of Projection Pursuit for dimensionality reduction.
 
 import time
 import warnings
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
@@ -20,7 +20,6 @@ from pyppur.utils.metrics import (
     compute_distance_distortion,
     compute_silhouette,
     compute_trustworthiness,
-    evaluate_embedding,
 )
 from pyppur.utils.preprocessing import standardize_data
 
@@ -241,7 +240,7 @@ class ProjectionPursuit:
         # Try random initializations
         for i in range(self.n_init):
             if self.verbose:
-                print(f"Random initialization {i+1}/{self.n_init}...")
+                print(f"Random initialization {i + 1}/{self.n_init}...")
 
             np.random.seed(
                 self.random_state + i if self.random_state is not None else None
