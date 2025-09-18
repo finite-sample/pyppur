@@ -2,7 +2,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/pyppur.svg)](https://pypi.org/project/pyppur/)
 [![PyPI Downloads](https://static.pepy.tech/badge/pyppur)](https://pepy.tech/projects/pyppur)
-[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://gojiplus.github.io/pyppur/)
+[![Documentation](https://img.shields.io/badge/docs-latest-brightgreen.svg)](https://finite-sample.github.io/pyppur/)
+[![CI](https://github.com/gojiplus/pyppur/workflows/CI/badge.svg)](https://github.com/gojiplus/pyppur/actions/workflows/ci.yml)
 
 ## Overview
 
