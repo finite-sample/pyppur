@@ -6,19 +6,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing
 ```bash
-pytest                    # Run all tests
-pytest tests/test_objectives.py  # Run specific test file
-pytest -v                 # Verbose output
-pytest --cov=pyppur --cov-report=term-missing # Run tests with coverage
+python3 -m pytest                    # Run all tests
+python3 -m pytest tests/test_objectives.py  # Run specific test file
+python3 -m pytest -v                 # Verbose output
+python3 -m pytest --cov=pyppur --cov-report=term-missing # Run tests with coverage
+# IMPORTANT: Always test locally before committing changes
 ```
 
 ### Code Quality
 ```bash
-ruff check pyppur/ tests/ # Lint code with Ruff
-ruff check --fix pyppur/ tests/  # Fix linting issues automatically
-ruff format pyppur/ tests/  # Format code with Ruff
-ruff format --check pyppur/ tests/  # Check formatting without changing
+python3 -m ruff check pyppur/ tests/ # Lint code with Ruff
+python3 -m ruff check --fix pyppur/ tests/  # Fix linting issues automatically
+python3 -m ruff format pyppur/ tests/  # Format code with Ruff
+python3 -m ruff format --check pyppur/ tests/  # Check formatting without changing
 # Note: mypy is disabled in CI (requires systematic type design work)
+# IMPORTANT: Always test locally before committing changes
 ```
 
 ### Building and Installation
@@ -26,8 +28,8 @@ ruff format --check pyppur/ tests/  # Check formatting without changing
 pip install -e .          # Install in development mode
 pip install -e .[dev]     # Install with dev dependencies
 pip install -e .[docs]    # Install with documentation dependencies
-python -m build           # Build distribution packages
-python -m twine check dist/*  # Check package integrity
+python3 -m build          # Build distribution packages
+python3 -m twine check dist/*  # Check package integrity
 pip install dist/pyppur-*.whl  # Install built package
 ```
 
