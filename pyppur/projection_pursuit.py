@@ -34,7 +34,8 @@ class ProjectionPursuit:
 
     Attributes:
         n_components (int): Number of projection dimensions
-        objective (Objective): Optimization objective (distance distortion or reconstruction)
+        objective (Objective): Optimization objective (distance distortion or
+            reconstruction)
         alpha (float): Steepness parameter for the ridge function
         max_iter (int): Maximum number of iterations for optimization
         tol (float): Tolerance for optimization convergence
@@ -88,10 +89,14 @@ class ProjectionPursuit:
             verbose: Whether to print progress information
             center: Whether to center the data
             scale: Whether to scale the data
-            weight_by_distance: Whether to weight distance distortion by inverse of original distances
-            tied_weights: Whether to use tied weights (encoder=decoder) for reconstruction
-            l2_reg: L2 regularization strength for decoder weights (when tied_weights=False)
-            use_nonlinearity_in_distance: Whether to apply ridge function before computing distances
+            weight_by_distance: Whether to weight distance distortion by inverse
+                of original distances
+            tied_weights: Whether to use tied weights (encoder=decoder) for
+                reconstruction
+            l2_reg: L2 regularization strength for decoder weights (when
+                tied_weights=False)
+            use_nonlinearity_in_distance: Whether to apply ridge function before
+                computing distances
         """
         self.n_components = n_components
 
@@ -101,7 +106,8 @@ class ProjectionPursuit:
             except ValueError:
                 # List the valid objective types directly
                 raise ValueError(
-                    f"Objective must be one of {[Objective.DISTANCE_DISTORTION, Objective.RECONSTRUCTION]}"
+                    f"Objective must be one of "
+                    f"{[Objective.DISTANCE_DISTORTION, Objective.RECONSTRUCTION]}"
                 )
         else:
             self.objective = objective
@@ -192,7 +198,8 @@ class ProjectionPursuit:
                 weight_by_distance=self.weight_by_distance,
                 use_nonlinearity=self.use_nonlinearity_in_distance,
             )
-            objective_kwargs = {"dist_X": dist_X, "weight_matrix": weight_matrix}
+            # objective_kwargs = {"dist_X": dist_X, "weight_matrix": weight_matrix}
+            # used in optimization calls below
 
         # Try multiple initializations and keep the best result
         best_loss = np.inf
@@ -548,7 +555,8 @@ class ProjectionPursuit:
         unique_labels, counts = np.unique(labels, return_counts=True)
         if any(counts < 2):
             warnings.warn(
-                "Some labels have fewer than 2 samples, silhouette score may be undefined"
+                "Some labels have fewer than 2 samples, silhouette score may be "
+                "undefined"
             )
             return np.nan
 

@@ -1,5 +1,6 @@
 """
-Tests for new features: untied weights, nonlinearity options, and improved normalization.
+Tests for new features: untied weights, nonlinearity options, and improved
+normalization.
 """
 
 import numpy as np
@@ -128,7 +129,8 @@ def test_l2_regularization():
     decoder_norm_no_reg = np.linalg.norm(pp_no_reg.decoder_weights_)
     decoder_norm_reg = np.linalg.norm(pp_reg.decoder_weights_)
 
-    # This test might be flaky due to optimization randomness, so we just check they're different
+    # This test might be flaky due to optimization randomness, so we just check
+    # they're different
     assert decoder_norm_no_reg != decoder_norm_reg
 
 
@@ -170,7 +172,7 @@ def test_parameter_validation():
         warnings.simplefilter("always")
         pp.fit(X)
         # Check that we got the n_components warning
-        user_warnings = [warning for warning in w if warning.category == UserWarning]
+        user_warnings = [warning for warning in w if warning.category is UserWarning]
         assert len(user_warnings) >= 1
         assert "n_components" in str(user_warnings[0].message)
     assert pp.n_components == 5  # Should be adjusted to n_features

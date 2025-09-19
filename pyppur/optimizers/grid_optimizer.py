@@ -132,7 +132,6 @@ class GridOptimizer(BaseOptimizer):
                 best_directions[component] = current_direction
 
                 # Evaluate with this direction
-                projections = X @ best_directions[: component + 1].T
                 objective_args = (
                     (X, component + 1)
                     if len(kwargs) == 0
@@ -181,7 +180,6 @@ class GridOptimizer(BaseOptimizer):
                     best_directions[component] = direction
 
                     # Evaluate with this direction
-                    projections = X @ best_directions[: component + 1].T
                     objective_args = (
                         (X, component + 1)
                         if len(kwargs) == 0
