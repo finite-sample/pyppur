@@ -1,6 +1,9 @@
 [build-system]
-requires = ["hatchling>=1.21.1"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.9.14,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "."
 
 [project]
 name = "pyppur"
@@ -47,8 +50,6 @@ docs = [
 "Homepage" = "https://github.com/gojiplus/pyppur"
 "Bug Tracker" = "https://github.com/gojiplus/pyppur/issues"
 
-[tool.hatch.build.targets.wheel]
-packages = ["pyppur"]
 
 [dependency-groups]
 dev = ["pytest>=7.0", "pytest-cov>=4.0", "ruff>=0.7.0", "mypy>=1.0", "pre-commit>=3.0"]
