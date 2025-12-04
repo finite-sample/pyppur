@@ -2,7 +2,7 @@
 Distance distortion objective for projection pursuit.
 """
 
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
@@ -47,8 +47,8 @@ class DistanceObjective(BaseObjective):
         a_flat: np.ndarray,
         X: np.ndarray,
         k: int,
-        dist_X: Optional[np.ndarray] = None,
-        weight_matrix: Optional[np.ndarray] = None,
+        dist_X: np.ndarray | None = None,
+        weight_matrix: np.ndarray | None = None,
         **kwargs,
     ) -> float:
         """

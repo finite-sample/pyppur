@@ -2,8 +2,11 @@
 Base class for optimization methods.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Optional, Tuple
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 
@@ -22,7 +25,7 @@ class BaseOptimizer(ABC):
         n_components: int,
         max_iter: int = 1000,
         tol: float = 1e-6,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
         verbose: bool = False,
         **kwargs: Any,
     ) -> None:
@@ -52,8 +55,8 @@ class BaseOptimizer(ABC):
 
     @abstractmethod
     def optimize(
-        self, X: np.ndarray, initial_guess: Optional[np.ndarray] = None, **kwargs
-    ) -> Tuple[np.ndarray, float, Dict[str, Any]]:
+        self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs
+    ) -> tuple[np.ndarray, float, dict[str, Any]]:
         """
         Optimize the projection directions.
 
@@ -63,7 +66,7 @@ class BaseOptimizer(ABC):
             **kwargs: Additional arguments for the objective function
 
         Returns:
-            Tuple[np.ndarray, float, Dict[str, Any]]:
+            tuple[np.ndarray, float, dict[str, Any]]:
                 - Optimized projection directions, shape (n_components, n_features)
                 - Final objective value
                 - Additional optimizer information

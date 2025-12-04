@@ -2,7 +2,7 @@
 Preprocessing utilities for projection pursuit.
 """
 
-from typing import Optional, Tuple
+from __future__ import annotations
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler
@@ -12,8 +12,8 @@ def standardize_data(
     X: np.ndarray,
     center: bool = True,
     scale: bool = True,
-    scaler: Optional[StandardScaler] = None,
-) -> Tuple[np.ndarray, StandardScaler]:
+    scaler: StandardScaler | None = None,
+) -> tuple[np.ndarray, StandardScaler]:
     """
     Standardize data for projection pursuit.
 
@@ -24,7 +24,7 @@ def standardize_data(
         scaler: Optional pre-fitted scaler for transform-only operation
 
     Returns:
-        Tuple[np.ndarray, StandardScaler]: Standardized data and the scaler
+        tuple[np.ndarray, StandardScaler]: Standardized data and the scaler
     """
     if scaler is None:
         scaler = StandardScaler(with_mean=center, with_std=scale)

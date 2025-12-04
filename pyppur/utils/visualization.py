@@ -2,7 +2,7 @@
 Visualization utilities for projection pursuit results.
 """
 
-from typing import Dict, Optional, Tuple
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -13,15 +13,15 @@ from matplotlib.figure import Figure
 
 def plot_embedding(
     X_embedded: np.ndarray,
-    labels: Optional[np.ndarray] = None,
+    labels: np.ndarray | None = None,
     title: str = "Projection Pursuit Embedding",
-    metrics: Optional[Dict[str, float]] = None,
-    figsize: Tuple[float, float] = (10, 8),
+    metrics: dict[str, float] | None = None,
+    figsize: tuple[float, float] = (10, 8),
     cmap: str = "tab10",
     alpha: float = 0.7,
     s: float = 30.0,
-    ax: Optional[Axes] = None,
-) -> Tuple[Figure, Axes]:
+    ax: Axes | None = None,
+) -> tuple[Figure, Axes]:
     """
     Plot the results of a projection pursuit embedding.
 
@@ -37,7 +37,7 @@ def plot_embedding(
         ax: Optional axes to plot on
 
     Returns:
-        Tuple[Figure, Axes]: Figure and Axes objects
+        tuple[Figure, Axes]: Figure and Axes objects
     """
     if X_embedded.shape[1] not in (2, 3):
         raise ValueError(
@@ -177,11 +177,11 @@ def plot_reconstruction(X, X_recon, n_samples=3):
 
 
 def plot_comparison(
-    embeddings: Dict[str, np.ndarray],
-    labels: Optional[np.ndarray] = None,
-    metrics: Optional[Dict[str, Dict[str, float]]] = None,
-    title: Optional[str] = None,  # <-- add this line
-    figsize: Tuple[float, float] = (15, 5),
+    embeddings: dict[str, np.ndarray],
+    labels: np.ndarray | None = None,
+    metrics: dict[str, dict[str, float]] | None = None,
+    title: str | None = None,
+    figsize: tuple[float, float] = (15, 5),
     cmap: str = "tab10",
     alpha: float = 0.7,
     s: float = 30.0,

@@ -2,9 +2,11 @@
 Main implementation of Projection Pursuit for dimensionality reduction.
 """
 
+from __future__ import annotations
+
 import time
 import warnings
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
@@ -39,7 +41,7 @@ class ProjectionPursuit:
         alpha (float): Steepness parameter for the ridge function
         max_iter (int): Maximum number of iterations for optimization
         tol (float): Tolerance for optimization convergence
-        random_state (Optional[int]): Random seed for reproducibility
+        random_state (int | None): Random seed for reproducibility
         optimizer (str): Optimization method ('L-BFGS-B' recommended)
         n_init (int): Number of random initializations
         verbose (bool): Whether to print progress information
@@ -58,11 +60,11 @@ class ProjectionPursuit:
     def __init__(
         self,
         n_components: int = 2,
-        objective: Union[Objective, str] = Objective.DISTANCE_DISTORTION,
+        objective: Objective | str = Objective.DISTANCE_DISTORTION,
         alpha: float = 1.0,
         max_iter: int = 500,
         tol: float = 1e-6,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
         optimizer: str = "L-BFGS-B",
         n_init: int = 3,
         verbose: bool = False,
@@ -128,14 +130,14 @@ class ProjectionPursuit:
 
         # Private attributes
         self._fitted = False
-        self._x_loadings: Optional[np.ndarray] = None
-        self._decoder_weights: Optional[np.ndarray] = None  # For untied weights
-        self._scaler: Optional[StandardScaler] = None
-        self._loss_curve: List[float] = []
+        self._x_loadings: np.ndarray | None = None
+        self._decoder_weights: np.ndarray | None = None  # For untied weights
+        self._scaler: StandardScaler | None = None
+        self._loss_curve: list[float] = []
         self._best_loss = np.inf
         self._fit_time = 0.0
-        self._objective_func: Optional[BaseObjective] = None
-        self._optimizer_info: Dict[str, Any] = {}
+        self._objective_func: BaseObjective | None = None
+        self._optimizer_info: dict[str, Any] = {}
 
         # Set random seed if provided
         if random_state is not None:
@@ -566,8 +568,8 @@ class ProjectionPursuit:
         return silhouette
 
     def evaluate(
-        self, X: np.ndarray, labels: Optional[np.ndarray] = None, n_neighbors: int = 5
-    ) -> Dict[str, float]:
+        self, X: np.ndarray, labels: np.ndarray | None = None, n_neighbors: int = 5
+    ) -> dict[str, float]:
         """
         Evaluate the dimensionality reduction with multiple metrics.
 
@@ -577,7 +579,7 @@ class ProjectionPursuit:
             n_neighbors: Number of neighbors for trustworthiness
 
         Returns:
-            Dict[str, float]: Dictionary with evaluation metrics
+            dict[str, float]: Dictionary with evaluation metrics
         """
         metrics = {}
 
@@ -626,7 +628,7 @@ class ProjectionPursuit:
         return self._x_loadings
 
     @property
-    def decoder_weights_(self) -> Optional[np.ndarray]:
+    def decoder_weights_(self) -> np.ndarray | None:
         """
         Get the decoder weights (for untied weights only).
 
@@ -642,12 +644,12 @@ class ProjectionPursuit:
         return self._decoder_weights
 
     @property
-    def loss_curve_(self) -> List[float]:
+    def loss_curve_(self) -> list[float]:
         """
         Get the loss curve during optimization.
 
         Returns:
-            List[float]: Loss values during optimization
+            list[float]: Loss values during optimization
         """
         return self._loss_curve
 
@@ -672,11 +674,11 @@ class ProjectionPursuit:
         return self._fit_time
 
     @property
-    def optimizer_info_(self) -> Dict[str, Any]:
+    def optimizer_info_(self) -> dict[str, Any]:
         """
         Get additional information from the optimizer.
 
         Returns:
-            Dict[str, Any]: Optimizer information
+            dict[str, Any]: Optimizer information
         """
         return self._optimizer_info

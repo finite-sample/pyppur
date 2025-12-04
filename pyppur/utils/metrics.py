@@ -2,8 +2,9 @@
 Evaluation metrics for dimensionality reduction.
 """
 
+from __future__ import annotations
+
 import warnings
-from typing import Dict, Optional
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
@@ -87,9 +88,9 @@ def compute_distance_distortion(
 def evaluate_embedding(
     X_original: np.ndarray,
     X_embedded: np.ndarray,
-    labels: Optional[np.ndarray] = None,
+    labels: np.ndarray | None = None,
     n_neighbors: int = 5,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """
     Evaluate the quality of an embedding using multiple metrics.
 
@@ -100,7 +101,7 @@ def evaluate_embedding(
         n_neighbors: Number of neighbors for trustworthiness
 
     Returns:
-        Dict[str, float]: Dictionary with evaluation metrics
+        dict[str, float]: Dictionary with evaluation metrics
     """
     metrics = {}
 

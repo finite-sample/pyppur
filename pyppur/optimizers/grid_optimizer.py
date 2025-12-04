@@ -2,7 +2,10 @@
 Grid-based optimizer for projection pursuit.
 """
 
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import Any
 
 import numpy as np
 
@@ -26,7 +29,7 @@ class GridOptimizer(BaseOptimizer):
         n_iterations: int = 10,
         max_iter: int = 1000,
         tol: float = 1e-6,
-        random_state: Optional[int] = None,
+        random_state: int | None = None,
         verbose: bool = False,
         **kwargs,
     ):
@@ -74,8 +77,8 @@ class GridOptimizer(BaseOptimizer):
         return directions
 
     def _optimize_sequential(
-        self, X: np.ndarray, initial_directions: Optional[np.ndarray] = None, **kwargs
-    ) -> Tuple[np.ndarray, float, List[float]]:
+        self, X: np.ndarray, initial_directions: np.ndarray | None = None, **kwargs
+    ) -> tuple[np.ndarray, float, list[float]]:
         """
         Optimize projection directions sequentially.
 
@@ -88,7 +91,7 @@ class GridOptimizer(BaseOptimizer):
             **kwargs: Additional arguments for the objective function
 
         Returns:
-            Tuple[np.ndarray, float, List[float]]:
+            tuple[np.ndarray, float, list[float]]:
                 - Optimized projection directions
                 - Final objective value
                 - Loss values for each component
@@ -215,8 +218,8 @@ class GridOptimizer(BaseOptimizer):
         return best_directions, final_loss, loss_values
 
     def optimize(
-        self, X: np.ndarray, initial_guess: Optional[np.ndarray] = None, **kwargs
-    ) -> Tuple[np.ndarray, float, Dict[str, Any]]:
+        self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs
+    ) -> tuple[np.ndarray, float, dict[str, Any]]:
         """
         Optimize the projection directions using a grid-based approach.
 
@@ -226,7 +229,7 @@ class GridOptimizer(BaseOptimizer):
             **kwargs: Additional arguments for the objective function
 
         Returns:
-            Tuple[np.ndarray, float, Dict[str, Any]]:
+            tuple[np.ndarray, float, dict[str, Any]]:
                 - Optimized projection directions, shape (n_components, n_features)
                 - Final objective value
                 - Additional optimizer information

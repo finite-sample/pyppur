@@ -2,7 +2,7 @@
 Reconstruction loss objective for projection pursuit.
 """
 
-from typing import Optional
+from __future__ import annotations
 
 import numpy as np
 
@@ -93,7 +93,7 @@ class ReconstructionObjective(BaseObjective):
         return loss
 
     def reconstruct(
-        self, X: np.ndarray, a_matrix: np.ndarray, b_matrix: Optional[np.ndarray] = None
+        self, X: np.ndarray, a_matrix: np.ndarray, b_matrix: np.ndarray | None = None
     ) -> np.ndarray:
         """
         Reconstruct data from projections.

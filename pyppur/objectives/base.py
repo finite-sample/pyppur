@@ -2,8 +2,10 @@
 Base class for objective functions.
 """
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 
@@ -16,7 +18,7 @@ class Objective:
     DISTANCE_DISTORTION = "distance_distortion"
     RECONSTRUCTION = "reconstruction"
 
-    def __new__(cls, value: Optional[str] = None) -> str:
+    def __new__(cls, value: str | None = None) -> str:
         """
         Create an objective type from a string value.
 
