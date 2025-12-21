@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2025-12-21
+
+### Changed
+- **Complete modernization of type hints**
+  - Updated to modern union syntax (`int | None` instead of `Optional[int]`)
+  - Added comprehensive type annotations throughout the entire codebase
+  - Enhanced function signatures with complete return type annotations
+  - Used `from __future__ import annotations` for forward references
+  - Added proper type hints to test functions and fixtures
+
+- **Comprehensive docstring standardization**
+  - Converted all docstrings from NumPy/Sphinx style to Google style
+  - Improved consistency and readability across all modules
+  - Standardized format with single-line summaries and clear Args/Returns sections
+  - Removed redundant type information now handled by type hints
+
+- **Enhanced developer experience**
+  - Improved code maintainability through modern Python standards
+  - Better IDE support with comprehensive type annotations
+  - Consistent documentation style for easier contribution
+  - Code quality improvements with zero linting issues
+
+### Technical Details
+- All modules updated: core, objectives, optimizers, utils, tests, examples
+- Sphinx documentation already configured with Furo theme and Napoleon for Google docstrings
+- Full backward compatibility maintained - no breaking API changes
+- All tests pass with modernized codebase
+
 ## [0.3.1] - 2025-09-18
 
 ### Changed

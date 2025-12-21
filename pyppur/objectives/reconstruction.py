@@ -4,14 +4,15 @@ Reconstruction loss objective for projection pursuit.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from pyppur.objectives.base import BaseObjective
 
 
 class ReconstructionObjective(BaseObjective):
-    """
-    Reconstruction loss objective function for projection pursuit.
+    """Reconstruction loss objective function for projection pursuit.
 
     This objective minimizes the reconstruction error when
     projecting and reconstructing data. Supports both tied-weights
@@ -23,35 +24,35 @@ class ReconstructionObjective(BaseObjective):
         alpha: float = 1.0,
         tied_weights: bool = True,
         l2_reg: float = 0.0,
-        **kwargs,
-    ):
-        """
-        Initialize the reconstruction objective.
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the reconstruction objective.
 
         Args:
-            alpha: Steepness parameter for the ridge function
+            alpha: Steepness parameter for the ridge function.
             tied_weights: If True, use tied weights (B=A). If False, learn separate
-                decoder B
+                decoder B.
             l2_reg: L2 regularization strength for decoder weights (when
-                tied_weights=False)
-            **kwargs: Additional keyword arguments
+                tied_weights=False).
+            **kwargs: Additional keyword arguments.
         """
         super().__init__(alpha=alpha, **kwargs)
         self.tied_weights = tied_weights
         self.l2_reg = l2_reg
 
-    def __call__(self, a_flat: np.ndarray, X: np.ndarray, k: int, **kwargs) -> float:
-        """
-        Compute the reconstruction objective.
+    def __call__(
+        self, a_flat: np.ndarray, X: np.ndarray, k: int, **kwargs: Any
+    ) -> float:
+        """Compute the reconstruction objective.
 
         Args:
-            a_flat: Flattened parameters (encoder A, and decoder B if untied)
-            X: Input data
-            k: Number of projections
-            **kwargs: Additional arguments
+            a_flat: Flattened parameters (encoder A, and decoder B if untied).
+            X: Input data.
+            k: Number of projections.
+            **kwargs: Additional arguments.
 
         Returns:
-            float: Reconstruction loss value (to be minimized)
+            Reconstruction loss value (to be minimized).
         """
         n_features = X.shape[1]
 
@@ -95,16 +96,15 @@ class ReconstructionObjective(BaseObjective):
     def reconstruct(
         self, X: np.ndarray, a_matrix: np.ndarray, b_matrix: np.ndarray | None = None
     ) -> np.ndarray:
-        """
-        Reconstruct data from projections.
+        """Reconstruct data from projections.
 
         Args:
-            X: Input data
-            a_matrix: Encoder projection matrix
-            b_matrix: Decoder matrix (if None, uses tied weights with a_matrix)
+            X: Input data.
+            a_matrix: Encoder projection matrix.
+            b_matrix: Decoder matrix (if None, uses tied weights with a_matrix).
 
         Returns:
-            np.ndarray: Reconstructed data
+            Reconstructed data.
         """
         # Project the data
         Z = self.g(X @ a_matrix.T, self.alpha)

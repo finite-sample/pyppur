@@ -12,8 +12,7 @@ import numpy as np
 
 
 class BaseOptimizer(ABC):
-    """
-    Abstract base class for projection pursuit optimizers.
+    """Abstract base class for projection pursuit optimizers.
 
     All optimizer implementations should inherit from this class
     and implement the required methods.
@@ -21,7 +20,7 @@ class BaseOptimizer(ABC):
 
     def __init__(
         self,
-        objective_func: Callable,
+        objective_func: Callable[..., float],
         n_components: int,
         max_iter: int = 1000,
         tol: float = 1e-6,
@@ -29,17 +28,16 @@ class BaseOptimizer(ABC):
         verbose: bool = False,
         **kwargs: Any,
     ) -> None:
-        """
-        Initialize the optimizer.
+        """Initialize the optimizer.
 
         Args:
-            objective_func: Objective function to minimize
-            n_components: Number of projection components
-            max_iter: Maximum number of iterations
-            tol: Tolerance for convergence
-            random_state: Random seed for reproducibility
-            verbose: Whether to print progress information
-            **kwargs: Additional keyword arguments
+            objective_func: Objective function to minimize.
+            n_components: Number of projection components.
+            max_iter: Maximum number of iterations.
+            tol: Tolerance for convergence.
+            random_state: Random seed for reproducibility.
+            verbose: Whether to print progress information.
+            **kwargs: Additional keyword arguments.
         """
         self.objective_func = objective_func
         self.n_components = n_components
@@ -55,18 +53,17 @@ class BaseOptimizer(ABC):
 
     @abstractmethod
     def optimize(
-        self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs
+        self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs: Any
     ) -> tuple[np.ndarray, float, dict[str, Any]]:
-        """
-        Optimize the projection directions.
+        """Optimize the projection directions.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            initial_guess: Optional initial guess for projection directions
-            **kwargs: Additional arguments for the objective function
+            X: Input data, shape (n_samples, n_features).
+            initial_guess: Optional initial guess for projection directions.
+            **kwargs: Additional arguments for the objective function.
 
         Returns:
-            tuple[np.ndarray, float, dict[str, Any]]:
+            Tuple containing:
                 - Optimized projection directions, shape (n_components, n_features)
                 - Final objective value
                 - Additional optimizer information

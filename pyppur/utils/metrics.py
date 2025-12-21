@@ -15,34 +15,32 @@ from sklearn.metrics import silhouette_score as sklearn_silhouette_score
 def compute_trustworthiness(
     X_original: np.ndarray, X_embedded: np.ndarray, n_neighbors: int = 5
 ) -> float:
-    """
-    Compute the trustworthiness score for dimensionality reduction.
+    """Compute the trustworthiness score for dimensionality reduction.
 
     Trustworthiness measures how well local neighborhoods are preserved.
 
     Args:
-        X_original: Original high-dimensional data
-        X_embedded: Low-dimensional embedding
-        n_neighbors: Number of neighbors to consider
+        X_original: Original high-dimensional data.
+        X_embedded: Low-dimensional embedding.
+        n_neighbors: Number of neighbors to consider.
 
     Returns:
-        float: Trustworthiness score in range [0, 1]
+        Trustworthiness score in range [0, 1].
     """
     return sklearn_trustworthiness(X_original, X_embedded, n_neighbors=n_neighbors)
 
 
 def compute_silhouette(X_embedded: np.ndarray, labels: np.ndarray) -> float:
-    """
-    Compute the silhouette score for the embedding.
+    """Compute the silhouette score for the embedding.
 
     The silhouette score measures how well clusters are separated.
 
     Args:
-        X_embedded: Low-dimensional embedding
-        labels: Cluster or class labels
+        X_embedded: Low-dimensional embedding.
+        labels: Cluster or class labels.
 
     Returns:
-        float: Silhouette score in range [-1, 1]
+        Silhouette score in range [-1, 1].
     """
     unique_labels, counts = np.unique(labels, return_counts=True)
     if len(unique_labels) < 2:
@@ -61,17 +59,16 @@ def compute_silhouette(X_embedded: np.ndarray, labels: np.ndarray) -> float:
 def compute_distance_distortion(
     X_original: np.ndarray, X_embedded: np.ndarray
 ) -> float:
-    """
-    Compute the distance distortion between original and embedded spaces.
+    """Compute the distance distortion between original and embedded spaces.
 
     Distance distortion measures how well pairwise distances are preserved.
 
     Args:
-        X_original: Original high-dimensional data
-        X_embedded: Low-dimensional embedding
+        X_original: Original high-dimensional data.
+        X_embedded: Low-dimensional embedding.
 
     Returns:
-        float: Mean squared distance distortion
+        Mean squared distance distortion.
     """
     # Compute pairwise distances in original space
     dist_original = squareform(pdist(X_original, metric="euclidean"))
@@ -91,17 +88,16 @@ def evaluate_embedding(
     labels: np.ndarray | None = None,
     n_neighbors: int = 5,
 ) -> dict[str, float]:
-    """
-    Evaluate the quality of an embedding using multiple metrics.
+    """Evaluate the quality of an embedding using multiple metrics.
 
     Args:
-        X_original: Original high-dimensional data
-        X_embedded: Low-dimensional embedding
-        labels: Optional cluster or class labels
-        n_neighbors: Number of neighbors for trustworthiness
+        X_original: Original high-dimensional data.
+        X_embedded: Low-dimensional embedding.
+        labels: Optional cluster or class labels.
+        n_neighbors: Number of neighbors for trustworthiness.
 
     Returns:
-        dict[str, float]: Dictionary with evaluation metrics
+        Dictionary with evaluation metrics.
     """
     metrics = {}
 

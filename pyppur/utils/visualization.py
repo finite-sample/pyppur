@@ -22,22 +22,21 @@ def plot_embedding(
     s: float = 30.0,
     ax: Axes | None = None,
 ) -> tuple[Figure, Axes]:
-    """
-    Plot the results of a projection pursuit embedding.
+    """Plot the results of a projection pursuit embedding.
 
     Args:
-        X_embedded: Embedded data, shape (n_samples, 2) or (n_samples, 3)
-        labels: Optional labels for coloring points
-        title: Plot title
-        metrics: Optional dictionary of metrics to include in title
-        figsize: Figure size (width, height) in inches
-        cmap: Colormap name
-        alpha: Transparency of points
-        s: Point size
-        ax: Optional axes to plot on
+        X_embedded: Embedded data, shape (n_samples, 2) or (n_samples, 3).
+        labels: Optional labels for coloring points.
+        title: Plot title.
+        metrics: Optional dictionary of metrics to include in title.
+        figsize: Figure size (width, height) in inches.
+        cmap: Colormap name.
+        alpha: Transparency of points.
+        s: Point size.
+        ax: Optional axes to plot on.
 
     Returns:
-        tuple[Figure, Axes]: Figure and Axes objects
+        Figure and Axes objects.
     """
     if X_embedded.shape[1] not in (2, 3):
         raise ValueError(
@@ -104,17 +103,18 @@ def plot_embedding(
     return fig, ax
 
 
-def plot_reconstruction(X, X_recon, n_samples=3):
-    """
-    Plot reconstructed samples alongside original samples.
+def plot_reconstruction(
+    X: np.ndarray, X_recon: np.ndarray, n_samples: int = 3
+) -> Figure:
+    """Plot reconstructed samples alongside original samples.
 
     Args:
-        X: Original data
-        X_recon: Reconstructed data
-        n_samples: Number of samples to plot
+        X: Original data.
+        X_recon: Reconstructed data.
+        n_samples: Number of samples to plot.
 
     Returns:
-        matplotlib Figure
+        matplotlib Figure.
     """
     import matplotlib.pyplot as plt
 
@@ -186,21 +186,20 @@ def plot_comparison(
     alpha: float = 0.7,
     s: float = 30.0,
 ) -> Figure:
-    """
-    Plot a comparison of multiple embeddings.
+    """Plot a comparison of multiple embeddings.
 
     Args:
-        embeddings: Dictionary of embeddings {name: embedded_data}
-        labels: Optional labels for coloring points
-        metrics: Optional dictionary of metrics for each embedding
-        title: Optional overall figure title
-        figsize: Figure size (width, height) in inches
-        cmap: Colormap name
-        alpha: Transparency of points
-        s: Point size
+        embeddings: Dictionary of embeddings {name: embedded_data}.
+        labels: Optional labels for coloring points.
+        metrics: Optional dictionary of metrics for each embedding.
+        title: Optional overall figure title.
+        figsize: Figure size (width, height) in inches.
+        cmap: Colormap name.
+        alpha: Transparency of points.
+        s: Point size.
 
     Returns:
-        Figure: matplotlib Figure object
+        matplotlib Figure object.
     """
     n_plots = len(embeddings)
 

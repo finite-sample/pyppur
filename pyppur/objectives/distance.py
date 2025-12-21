@@ -4,6 +4,8 @@ Distance distortion objective for projection pursuit.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
@@ -12,8 +14,7 @@ from pyppur.objectives.base import BaseObjective
 
 # Rename the class to match the import
 class DistanceObjective(BaseObjective):
-    """
-    Distance distortion objective function for projection pursuit.
+    """Distance distortion objective function for projection pursuit.
 
     This objective minimizes the difference between pairwise distances
     in the original space and the projected space. Can optionally apply
@@ -25,18 +26,17 @@ class DistanceObjective(BaseObjective):
         alpha: float = 1.0,
         weight_by_distance: bool = False,
         use_nonlinearity: bool = True,
-        **kwargs,
-    ):
-        """
-        Initialize the distance distortion objective.
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the distance distortion objective.
 
         Args:
-            alpha: Steepness parameter for the ridge function
+            alpha: Steepness parameter for the ridge function.
             weight_by_distance: Whether to weight distortion by inverse of
-                original distances
+                original distances.
             use_nonlinearity: Whether to apply ridge function before computing
-                distances
-            **kwargs: Additional keyword arguments
+                distances.
+            **kwargs: Additional keyword arguments.
         """
         super().__init__(alpha=alpha, **kwargs)
         self.weight_by_distance = weight_by_distance
@@ -49,21 +49,20 @@ class DistanceObjective(BaseObjective):
         k: int,
         dist_X: np.ndarray | None = None,
         weight_matrix: np.ndarray | None = None,
-        **kwargs,
+        **kwargs: Any,
     ) -> float:
-        """
-        Compute the distance distortion objective.
+        """Compute the distance distortion objective.
 
         Args:
-            a_flat: Flattened projection directions
-            X: Input data
-            k: Number of projections
-            dist_X: Pairwise distances in original space (optional)
-            weight_matrix: Optional weight matrix for distances
-            **kwargs: Additional arguments
+            a_flat: Flattened projection directions.
+            X: Input data.
+            k: Number of projections.
+            dist_X: Pairwise distances in original space (optional).
+            weight_matrix: Optional weight matrix for distances.
+            **kwargs: Additional arguments.
 
         Returns:
-            float: Distance distortion value (to be minimized)
+            Distance distortion value (to be minimized).
         """
         # Reshape the flat parameter vector into a matrix
         a_matrix = a_flat.reshape(k, X.shape[1])

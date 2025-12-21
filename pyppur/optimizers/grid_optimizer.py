@@ -13,8 +13,7 @@ from pyppur.optimizers.base import BaseOptimizer
 
 
 class GridOptimizer(BaseOptimizer):
-    """
-    Optimizer using a grid-based search approach.
+    """Optimizer using a grid-based search approach.
 
     This optimizer is particularly useful for projection indices that are not
     differentiable or have many local minima. It systematically explores the
@@ -23,7 +22,7 @@ class GridOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        objective_func: Callable,
+        objective_func: Callable[..., float],
         n_components: int,
         n_directions: int = 250,
         n_iterations: int = 10,
@@ -31,21 +30,20 @@ class GridOptimizer(BaseOptimizer):
         tol: float = 1e-6,
         random_state: int | None = None,
         verbose: bool = False,
-        **kwargs,
-    ):
-        """
-        Initialize the grid optimizer.
+        **kwargs: Any,
+    ) -> None:
+        """Initialize the grid optimizer.
 
         Args:
-            objective_func: Objective function to minimize
-            n_components: Number of projection components
-            n_directions: Number of random directions to generate per iteration
-            n_iterations: Number of refinement iterations
-            max_iter: Maximum number of iterations
-            tol: Tolerance for convergence
-            random_state: Random seed for reproducibility
-            verbose: Whether to print progress information
-            **kwargs: Additional keyword arguments for the optimizer
+            objective_func: Objective function to minimize.
+            n_components: Number of projection components.
+            n_directions: Number of random directions to generate per iteration.
+            n_iterations: Number of refinement iterations.
+            max_iter: Maximum number of iterations.
+            tol: Tolerance for convergence.
+            random_state: Random seed for reproducibility.
+            verbose: Whether to print progress information.
+            **kwargs: Additional keyword arguments for the optimizer.
         """
         super().__init__(
             objective_func=objective_func,
@@ -62,36 +60,34 @@ class GridOptimizer(BaseOptimizer):
     def _generate_random_directions(
         self, n_features: int, n_directions: int
     ) -> np.ndarray:
-        """
-        Generate random unit directions.
+        """Generate random unit directions.
 
         Args:
-            n_features: Number of features in the data
-            n_directions: Number of directions to generate
+            n_features: Number of features in the data.
+            n_directions: Number of directions to generate.
 
         Returns:
-            np.ndarray: Random directions, shape (n_directions, n_features)
+            Random directions, shape (n_directions, n_features).
         """
         directions = np.random.randn(n_directions, n_features)
         directions = directions / np.linalg.norm(directions, axis=1, keepdims=True)
         return directions
 
     def _optimize_sequential(
-        self, X: np.ndarray, initial_directions: np.ndarray | None = None, **kwargs
+        self, X: np.ndarray, initial_directions: np.ndarray | None = None, **kwargs: Any
     ) -> tuple[np.ndarray, float, list[float]]:
-        """
-        Optimize projection directions sequentially.
+        """Optimize projection directions sequentially.
 
         This method finds one direction at a time, optimizing each direction
         while keeping the previous ones fixed.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            initial_directions: Optional initial directions
-            **kwargs: Additional arguments for the objective function
+            X: Input data, shape (n_samples, n_features).
+            initial_directions: Optional initial directions.
+            **kwargs: Additional arguments for the objective function.
 
         Returns:
-            tuple[np.ndarray, float, list[float]]:
+            Tuple containing:
                 - Optimized projection directions
                 - Final objective value
                 - Loss values for each component
@@ -218,18 +214,17 @@ class GridOptimizer(BaseOptimizer):
         return best_directions, final_loss, loss_values
 
     def optimize(
-        self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs
+        self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs: Any
     ) -> tuple[np.ndarray, float, dict[str, Any]]:
-        """
-        Optimize the projection directions using a grid-based approach.
+        """Optimize the projection directions using a grid-based approach.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            initial_guess: Optional initial guess for projection directions
-            **kwargs: Additional arguments for the objective function
+            X: Input data, shape (n_samples, n_features).
+            initial_guess: Optional initial guess for projection directions.
+            **kwargs: Additional arguments for the objective function.
 
         Returns:
-            tuple[np.ndarray, float, dict[str, Any]]:
+            Tuple containing:
                 - Optimized projection directions, shape (n_components, n_features)
                 - Final objective value
                 - Additional optimizer information

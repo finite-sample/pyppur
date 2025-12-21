@@ -16,16 +16,15 @@ from pyppur.optimizers.base import BaseOptimizer
 def normalize_projection_directions(
     a_flat: np.ndarray, n_components: int, n_features: int
 ) -> np.ndarray:
-    """
-    Normalize the encoder projection directions to unit norm.
+    """Normalize the encoder projection directions to unit norm.
 
     Args:
-        a_flat: Flattened parameter vector
-        n_components: Number of projection components
-        n_features: Number of features
+        a_flat: Flattened parameter vector.
+        n_components: Number of projection components.
+        n_features: Number of features.
 
     Returns:
-        np.ndarray: Normalized parameter vector
+        Normalized parameter vector.
     """
     # For tied weights, normalize only the encoder part
     # For untied weights, normalize only the encoder part (first half)
@@ -45,8 +44,7 @@ def normalize_projection_directions(
 
 
 class ScipyOptimizer(BaseOptimizer):
-    """
-    Optimizer using SciPy's optimization methods.
+    """Optimizer using SciPy's optimization methods.
 
     This optimizer leverages SciPy's optimization functionality,
     particularly the L-BFGS-B method which is well-suited for
@@ -55,7 +53,7 @@ class ScipyOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        objective_func: Callable,
+        objective_func: Callable[..., float],
         n_components: int,
         method: str = "L-BFGS-B",
         max_iter: int = 1000,
@@ -64,18 +62,17 @@ class ScipyOptimizer(BaseOptimizer):
         verbose: bool = False,
         **kwargs: Any,
     ) -> None:
-        """
-        Initialize the SciPy optimizer.
+        """Initialize the SciPy optimizer.
 
         Args:
-            objective_func: Objective function to minimize
-            n_components: Number of projection components
-            method: SciPy optimization method (default: "L-BFGS-B")
-            max_iter: Maximum number of iterations
-            tol: Tolerance for convergence
-            random_state: Random seed for reproducibility
-            verbose: Whether to print progress information
-            **kwargs: Additional keyword arguments for the optimizer
+            objective_func: Objective function to minimize.
+            n_components: Number of projection components.
+            method: SciPy optimization method (default: "L-BFGS-B").
+            max_iter: Maximum number of iterations.
+            tol: Tolerance for convergence.
+            random_state: Random seed for reproducibility.
+            verbose: Whether to print progress information.
+            **kwargs: Additional keyword arguments for the optimizer.
         """
         super().__init__(
             objective_func=objective_func,
@@ -91,16 +88,15 @@ class ScipyOptimizer(BaseOptimizer):
     def optimize(
         self, X: np.ndarray, initial_guess: np.ndarray | None = None, **kwargs: Any
     ) -> tuple[np.ndarray, float, dict[str, Any]]:
-        """
-        Optimize the projection directions using SciPy's optimization methods.
+        """Optimize the projection directions using SciPy's optimization methods.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            initial_guess: Optional initial guess for projection directions
-            **kwargs: Additional arguments for the objective function
+            X: Input data, shape (n_samples, n_features).
+            initial_guess: Optional initial guess for projection directions.
+            **kwargs: Additional arguments for the objective function.
 
         Returns:
-            tuple[np.ndarray, float, dict[str, Any]]:
+            Tuple containing:
                 - Optimized projection directions, shape (n_components, n_features)
                 - Final objective value
                 - Additional optimizer information

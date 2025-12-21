@@ -27,33 +27,29 @@ from pyppur.utils.preprocessing import standardize_data
 
 
 class ProjectionPursuit:
-    """
-    Implementation of Projection Pursuit for dimensionality reduction.
+    """Implementation of Projection Pursuit for dimensionality reduction.
 
     This class provides methods to find optimal projections by minimizing
     either reconstruction loss or distance distortion. It supports both
     initialization strategies and different optimizers.
 
     Attributes:
-        n_components (int): Number of projection dimensions
-        objective (Objective): Optimization objective (distance distortion or
-            reconstruction)
-        alpha (float): Steepness parameter for the ridge function
-        max_iter (int): Maximum number of iterations for optimization
-        tol (float): Tolerance for optimization convergence
-        random_state (int | None): Random seed for reproducibility
-        optimizer (str): Optimization method ('L-BFGS-B' recommended)
-        n_init (int): Number of random initializations
-        verbose (bool): Whether to print progress information
-        center (bool): Whether to center the data
-        scale (bool): Whether to scale the data
-        weight_by_distance (bool): Whether to weight distance distortion by inverse of
+        n_components: Number of projection dimensions
+        objective: Optimization objective (distance distortion or reconstruction)
+        alpha: Steepness parameter for the ridge function
+        max_iter: Maximum number of iterations for optimization
+        tol: Tolerance for optimization convergence
+        random_state: Random seed for reproducibility
+        optimizer: Optimization method ('L-BFGS-B' recommended)
+        n_init: Number of random initializations
+        verbose: Whether to print progress information
+        center: Whether to center the data
+        scale: Whether to scale the data
+        weight_by_distance: Whether to weight distance distortion by inverse of
             original distances
-        tied_weights (bool): Whether to use tied weights (encoder=decoder) for
-            reconstruction
-        l2_reg (float): L2 regularization strength for decoder weights (when
-            tied_weights=False)
-        use_nonlinearity_in_distance (bool): Whether to apply ridge function before
+        tied_weights: Whether to use tied weights (encoder=decoder) for reconstruction
+        l2_reg: L2 regularization strength for decoder weights (when tied_weights=False)
+        use_nonlinearity_in_distance: Whether to apply ridge function before
             computing distances
     """
 
@@ -74,31 +70,30 @@ class ProjectionPursuit:
         tied_weights: bool = True,
         l2_reg: float = 0.0,
         use_nonlinearity_in_distance: bool = True,
-    ):
-        """
-        Initialize a ProjectionPursuit model.
+    ) -> None:
+        """Initialize a ProjectionPursuit model.
 
         Args:
-            n_components: Number of projection dimensions to use
+            n_components: Number of projection dimensions to use.
             objective: Optimization objective, either "distance_distortion" or
-                "reconstruction"
-            alpha: Steepness parameter for the ridge function g(z) = tanh(alpha * z)
-            max_iter: Maximum number of iterations for optimization
-            tol: Tolerance for optimization convergence
-            random_state: Random seed for reproducibility
-            optimizer: Optimization method ('L-BFGS-B' recommended)
-            n_init: Number of random initializations to try
-            verbose: Whether to print progress information
-            center: Whether to center the data
-            scale: Whether to scale the data
+                "reconstruction".
+            alpha: Steepness parameter for the ridge function g(z) = tanh(alpha * z).
+            max_iter: Maximum number of iterations for optimization.
+            tol: Tolerance for optimization convergence.
+            random_state: Random seed for reproducibility.
+            optimizer: Optimization method ('L-BFGS-B' recommended).
+            n_init: Number of random initializations to try.
+            verbose: Whether to print progress information.
+            center: Whether to center the data.
+            scale: Whether to scale the data.
             weight_by_distance: Whether to weight distance distortion by inverse
-                of original distances
+                of original distances.
             tied_weights: Whether to use tied weights (encoder=decoder) for
-                reconstruction
+                reconstruction.
             l2_reg: L2 regularization strength for decoder weights (when
-                tied_weights=False)
+                tied_weights=False).
             use_nonlinearity_in_distance: Whether to apply ridge function before
-                computing distances
+                computing distances.
         """
         self.n_components = n_components
 
@@ -144,14 +139,13 @@ class ProjectionPursuit:
             np.random.seed(random_state)
 
     def fit(self, X: np.ndarray) -> "ProjectionPursuit":
-        """
-        Fit the ProjectionPursuit model to the data.
+        """Fit the ProjectionPursuit model to the data.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
+            X: Input data, shape (n_samples, n_features).
 
         Returns:
-            self: The fitted model
+            The fitted model.
         """
         start_time = time.time()
 
@@ -313,14 +307,13 @@ class ProjectionPursuit:
         return self
 
     def transform(self, X: np.ndarray) -> np.ndarray:
-        """
-        Apply dimensionality reduction to X.
+        """Apply dimensionality reduction to X.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
+            X: Input data, shape (n_samples, n_features).
 
         Returns:
-            np.ndarray: Transformed data, shape (n_samples, n_components)
+            Transformed data, shape (n_samples, n_components).
         """
         if not self._fitted:
             raise ValueError(
@@ -355,27 +348,25 @@ class ProjectionPursuit:
         return Z_transformed
 
     def fit_transform(self, X: np.ndarray) -> np.ndarray:
-        """
-        Fit the model with X and apply dimensionality reduction on X.
+        """Fit the model with X and apply dimensionality reduction on X.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
+            X: Input data, shape (n_samples, n_features).
 
         Returns:
-            np.ndarray: Transformed data, shape (n_samples, n_components)
+            Transformed data, shape (n_samples, n_components).
         """
         self.fit(X)
         return self.transform(X)
 
     def reconstruct(self, X: np.ndarray) -> np.ndarray:
-        """
-        Reconstruct X from the projected data.
+        """Reconstruct X from the projected data.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
+            X: Input data, shape (n_samples, n_features).
 
         Returns:
-            np.ndarray: Reconstructed data, shape (n_samples, n_features)
+            Reconstructed data, shape (n_samples, n_features).
         """
         if not self._fitted:
             raise ValueError(
@@ -420,27 +411,25 @@ class ProjectionPursuit:
         return X_hat
 
     def reconstruction_error(self, X: np.ndarray) -> float:
-        """
-        Compute the reconstruction error for X.
+        """Compute the reconstruction error for X.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
+            X: Input data, shape (n_samples, n_features).
 
         Returns:
-            float: Mean squared reconstruction error
+            Mean squared reconstruction error.
         """
         X_hat = self.reconstruct(X)
         return np.mean((X - X_hat) ** 2)
 
     def distance_distortion(self, X: np.ndarray) -> float:
-        """
-        Compute the distance distortion for X.
+        """Compute the distance distortion for X.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
+            X: Input data, shape (n_samples, n_features).
 
         Returns:
-            float: Mean squared distance distortion
+            Mean squared distance distortion.
         """
         if not self._fitted:
             raise ValueError(
@@ -483,19 +472,18 @@ class ProjectionPursuit:
         return distortion
 
     def compute_trustworthiness(self, X: np.ndarray, n_neighbors: int = 5) -> float:
-        """
-        Compute the trustworthiness score for the dimensionality reduction.
+        """Compute the trustworthiness score for the dimensionality reduction.
 
         Trustworthiness measures how well the local structure is preserved.
         A score of 1.0 indicates perfect trustworthiness, while a score of 0.0
         indicates that the local structure is not preserved at all.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            n_neighbors: Number of neighbors to consider for trustworthiness
+            X: Input data, shape (n_samples, n_features).
+            n_neighbors: Number of neighbors to consider for trustworthiness.
 
         Returns:
-            float: Trustworthiness score between 0.0 and 1.0
+            Trustworthiness score between 0.0 and 1.0.
         """
         if not self._fitted:
             raise ValueError(
@@ -525,19 +513,18 @@ class ProjectionPursuit:
         return trust
 
     def compute_silhouette(self, X: np.ndarray, labels: np.ndarray) -> float:
-        """
-        Compute the silhouette score for the dimensionality reduction.
+        """Compute the silhouette score for the dimensionality reduction.
 
         Silhouette score measures how well clusters are separated.
         A score close to 1.0 indicates that clusters are well separated,
         while a score close to -1.0 indicates poor separation.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            labels: Cluster labels for each sample
+            X: Input data, shape (n_samples, n_features).
+            labels: Cluster labels for each sample.
 
         Returns:
-            float: Silhouette score between -1.0 and 1.0
+            Silhouette score between -1.0 and 1.0.
         """
         if not self._fitted:
             raise ValueError(
@@ -570,16 +557,15 @@ class ProjectionPursuit:
     def evaluate(
         self, X: np.ndarray, labels: np.ndarray | None = None, n_neighbors: int = 5
     ) -> dict[str, float]:
-        """
-        Evaluate the dimensionality reduction with multiple metrics.
+        """Evaluate the dimensionality reduction with multiple metrics.
 
         Args:
-            X: Input data, shape (n_samples, n_features)
-            labels: Optional cluster labels for silhouette score
-            n_neighbors: Number of neighbors for trustworthiness
+            X: Input data, shape (n_samples, n_features).
+            labels: Optional cluster labels for silhouette score.
+            n_neighbors: Number of neighbors for trustworthiness.
 
         Returns:
-            dict[str, float]: Dictionary with evaluation metrics
+            Dictionary with evaluation metrics.
         """
         metrics = {}
 
@@ -613,11 +599,10 @@ class ProjectionPursuit:
 
     @property
     def x_loadings_(self) -> np.ndarray:
-        """
-        Get the projection directions (encoder).
+        """Get the projection directions (encoder).
 
         Returns:
-            np.ndarray: Projection directions, shape (n_components, n_features)
+            Projection directions, shape (n_components, n_features).
         """
         if not self._fitted:
             raise ValueError(
@@ -629,12 +614,11 @@ class ProjectionPursuit:
 
     @property
     def decoder_weights_(self) -> np.ndarray | None:
-        """
-        Get the decoder weights (for untied weights only).
+        """Get the decoder weights (for untied weights only).
 
         Returns:
-            np.ndarray or None: Decoder weights, shape (n_components, n_features),
-                               or None if using tied weights
+            Decoder weights, shape (n_components, n_features), or None if using
+            tied weights.
         """
         if not self._fitted:
             raise ValueError(
@@ -645,40 +629,36 @@ class ProjectionPursuit:
 
     @property
     def loss_curve_(self) -> list[float]:
-        """
-        Get the loss curve during optimization.
+        """Get the loss curve during optimization.
 
         Returns:
-            list[float]: Loss values during optimization
+            Loss values during optimization.
         """
         return self._loss_curve
 
     @property
     def best_loss_(self) -> float:
-        """
-        Get the best loss value achieved.
+        """Get the best loss value achieved.
 
         Returns:
-            float: Best loss value
+            Best loss value.
         """
         return self._best_loss
 
     @property
     def fit_time_(self) -> float:
-        """
-        Get the time taken to fit the model.
+        """Get the time taken to fit the model.
 
         Returns:
-            float: Time in seconds
+            Time in seconds.
         """
         return self._fit_time
 
     @property
     def optimizer_info_(self) -> dict[str, Any]:
-        """
-        Get additional information from the optimizer.
+        """Get additional information from the optimizer.
 
         Returns:
-            dict[str, Any]: Optimizer information
+            Optimizer information.
         """
         return self._optimizer_info

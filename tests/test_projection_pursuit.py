@@ -1,6 +1,6 @@
-"""
-Tests for the ProjectionPursuit class.
-"""
+"""Tests for the ProjectionPursuit class."""
+
+from __future__ import annotations
 
 import numpy as np
 import pytest
@@ -11,7 +11,7 @@ from pyppur import Objective, ProjectionPursuit
 
 
 @pytest.fixture
-def digits_data():
+def digits_data() -> tuple[np.ndarray, np.ndarray]:
     """Fixture for digits dataset."""
     digits = load_digits()
     X = digits.data[:100]  # Subset for faster testing
@@ -22,7 +22,7 @@ def digits_data():
 
 
 @pytest.fixture
-def swiss_roll_data():
+def swiss_roll_data() -> tuple[np.ndarray, np.ndarray]:
     """Fixture for swiss roll dataset."""
     X, t = make_swiss_roll(n_samples=100, noise=0.1, random_state=42)
     scaler = StandardScaler()
@@ -35,7 +35,7 @@ def swiss_roll_data():
     return X_scaled, labels.astype(int)
 
 
-def test_init():
+def test_init() -> None:
     """Test initialization of ProjectionPursuit."""
     # Default initialization
     pp = ProjectionPursuit()
@@ -66,7 +66,9 @@ def test_init():
         ProjectionPursuit(objective="invalid")
 
 
-def test_distance_distortion_pipeline(digits_data):
+def test_distance_distortion_pipeline(
+    digits_data: tuple[np.ndarray, np.ndarray],
+) -> None:
     """Test the full pipeline with distance distortion objective."""
     X, y = digits_data
 
@@ -115,7 +117,7 @@ def test_distance_distortion_pipeline(digits_data):
     assert "silhouette" in metrics
 
 
-def test_reconstruction_pipeline(digits_data):
+def test_reconstruction_pipeline(digits_data: tuple[np.ndarray, np.ndarray]) -> None:
     """Test the full pipeline with reconstruction objective."""
     X, y = digits_data
 
@@ -146,7 +148,7 @@ def test_reconstruction_pipeline(digits_data):
     assert recon_error >= 0.0
 
 
-def test_non_linear_data(swiss_roll_data):
+def test_non_linear_data(swiss_roll_data: tuple[np.ndarray, np.ndarray]) -> None:
     """Test on non-linear data to ensure it works well."""
     X, y = swiss_roll_data
 
@@ -181,7 +183,7 @@ def test_non_linear_data(swiss_roll_data):
     assert "trustworthiness" in metrics_recon
 
 
-def test_error_handling():
+def test_error_handling() -> None:
     """Test error handling in the ProjectionPursuit class."""
     pp = ProjectionPursuit()
 

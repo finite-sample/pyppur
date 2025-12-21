@@ -1,6 +1,6 @@
-"""
-Basic usage examples for pyppur.
-"""
+"""Basic usage examples for pyppur."""
+
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_digits
@@ -10,10 +10,8 @@ from pyppur import Objective, ProjectionPursuit
 from pyppur.utils.visualization import plot_comparison
 
 
-def digits_example():
-    """
-    Example with the digits dataset.
-    """
+def digits_example() -> None:
+    """Example with the digits dataset."""
     # Load data
     digits = load_digits()
     X = digits.data
