@@ -16,6 +16,7 @@ pyppur.utils.metrics module
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
 
 pyppur.utils.preprocessing module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -24,6 +25,7 @@ pyppur.utils.preprocessing module
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
 
 pyppur.utils.visualization module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -32,3 +34,4 @@ pyppur.utils.visualization module
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:

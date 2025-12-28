@@ -57,7 +57,7 @@ Optimizers
 ----------
 
 SciPy Optimizer
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 .. autoclass:: pyppur.optimizers.ScipyOptimizer
    :members:
@@ -66,7 +66,7 @@ SciPy Optimizer
    :show-inheritance:
 
 Grid Optimizer
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 .. autoclass:: pyppur.optimizers.GridOptimizer
    :members:
@@ -75,7 +75,7 @@ Grid Optimizer
    :show-inheritance:
 
 Utility Functions
-----------------
+-----------------
 
 Metrics
 ~~~~~~~
@@ -86,7 +86,7 @@ Metrics
    :show-inheritance:
 
 Preprocessing
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. automodule:: pyppur.utils.preprocessing
    :members:
@@ -94,7 +94,7 @@ Preprocessing
    :show-inheritance:
 
 Visualization
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. automodule:: pyppur.utils.visualization
    :members:
@@ -102,9 +102,9 @@ Visualization
    :show-inheritance:
 
 Helper Functions
----------------
+----------------
 
 Normalization
-~~~~~~~~~~~~
+~~~~~~~~~~~~~
 
 .. autofunction:: pyppur.optimizers.scipy_optimizer.normalize_projection_directions

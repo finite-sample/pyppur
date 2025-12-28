@@ -5,6 +5,7 @@ pyppur package
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
 
 Subpackages
 -----------

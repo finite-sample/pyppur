@@ -4,7 +4,7 @@ Examples
 This section provides comprehensive examples of using pyppur for different scenarios.
 
 Basic Usage Examples
--------------------
+--------------------
 
 Distance Distortion Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -68,7 +68,7 @@ Distance Distortion Example
    plt.show()
 
 Reconstruction Examples
-~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -108,10 +108,10 @@ Reconstruction Examples
    print("Untied decoder shape:", pp_untied.decoder_weights_.shape)
 
 Advanced Examples
-----------------
+-----------------
 
 Parameter Sensitivity Analysis
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -161,7 +161,7 @@ Parameter Sensitivity Analysis
    plt.show()
 
 Comparison with Other Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -237,7 +237,7 @@ Comparison with Other Methods
        print(f"{method}: {time_taken:.3f} seconds")
 
 Evaluation and Metrics
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
@@ -316,7 +316,7 @@ Working with Large Datasets
    print(f"Processed {X_scaled.shape[0]} samples in {pp_large.fit_time_:.2f} seconds")
 
 Custom Workflows
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 

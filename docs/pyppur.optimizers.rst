@@ -5,6 +5,7 @@ pyppur.optimizers package
    :members:
    :undoc-members:
    :show-inheritance:
+   :no-index:
 
 Submodules
 ----------
@@ -17,6 +18,7 @@ pyppur.optimizers.base module
    :undoc-members:
    :show-inheritance:
    :exclude-members: BaseOptimizer
+   :no-index:
 
 pyppur.optimizers.scipy_optimizer module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -26,6 +28,7 @@ pyppur.optimizers.scipy_optimizer module
    :undoc-members:
    :show-inheritance:
    :exclude-members: ScipyOptimizer
+   :no-index:
 
 pyppur.optimizers.grid_optimizer module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,3 +38,4 @@ pyppur.optimizers.grid_optimizer module
    :undoc-members:
    :show-inheritance:
    :exclude-members: GridOptimizer
+   :no-index:
