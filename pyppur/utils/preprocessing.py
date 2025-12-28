@@ -2,8 +2,6 @@
 Preprocessing utilities for projection pursuit.
 """
 
-from __future__ import annotations
-
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
@@ -27,8 +25,8 @@ def standardize_data(
     """
     if scaler is None:
         scaler = StandardScaler(with_mean=center, with_std=scale)
-        X_std = scaler.fit_transform(X)
+        X_std = np.asarray(scaler.fit_transform(X))
     else:
-        X_std = scaler.transform(X)
+        X_std = np.asarray(scaler.transform(X))
 
     return X_std, scaler

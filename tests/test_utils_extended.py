@@ -27,14 +27,14 @@ from pyppur.utils.visualization import (
 @pytest.fixture
 def sample_2d_data():
     """Generate 2D sample data for visualization tests."""
-    X, labels = make_blobs(n_samples=50, centers=3, n_features=2, random_state=42)
+    X, labels = make_blobs(n_samples=50, centers=3, n_features=2, random_state=42)  # type: ignore[misc]
     return X, labels
 
 
 @pytest.fixture
 def sample_3d_data():
     """Generate 3D sample data for visualization tests."""
-    X, labels = make_blobs(n_samples=50, centers=3, n_features=3, random_state=42)
+    X, labels = make_blobs(n_samples=50, centers=3, n_features=3, random_state=42)  # type: ignore[misc]
     return X, labels
 
 

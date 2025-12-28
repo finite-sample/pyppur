@@ -7,7 +7,7 @@ import pytest
 from sklearn.datasets import load_digits
 from sklearn.preprocessing import StandardScaler
 
-from pyppur.objectives.distance import DistanceDistortionObjective
+from pyppur.objectives.distance import DistanceObjective
 from pyppur.objectives.reconstruction import ReconstructionObjective
 from pyppur.optimizers import GridOptimizer, ScipyOptimizer
 
@@ -17,7 +17,7 @@ def sample_data():
     """Fixture for sample data."""
     # Use a subset of the digits dataset
     digits = load_digits()
-    X = digits.data[:100]
+    X = digits.data[:100]  # type: ignore[attr-defined]
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled
@@ -68,7 +68,7 @@ def test_scipy_optimizer_distance(sample_data):
     dist_X = squareform(pdist(X, metric="euclidean"))
 
     # Create objective function
-    objective = DistanceDistortionObjective(alpha=1.0)
+    objective = DistanceObjective(alpha=1.0)
 
     # Create optimizer
     optimizer = ScipyOptimizer(
@@ -142,7 +142,7 @@ def test_grid_optimizer_distance(sample_data):
     dist_X = squareform(pdist(X, metric="euclidean"))
 
     # Create objective function
-    objective = DistanceDistortionObjective(alpha=1.0)
+    objective = DistanceObjective(alpha=1.0)
 
     # Create optimizer
     optimizer = GridOptimizer(

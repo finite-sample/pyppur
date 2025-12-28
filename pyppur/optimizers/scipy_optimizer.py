@@ -2,8 +2,6 @@
 SciPy-based optimizer for projection pursuit.
 """
 
-from __future__ import annotations
-
 from collections.abc import Callable
 from typing import Any
 
@@ -104,9 +102,8 @@ class ScipyOptimizer(BaseOptimizer):
         n_features = X.shape[1]
 
         # Check if this is for untied weights (reconstruction with separate decoder)
-        is_untied = (
-            hasattr(self.objective_func, "tied_weights")
-            and not self.objective_func.tied_weights
+        is_untied = hasattr(self.objective_func, "tied_weights") and not getattr(
+            self.objective_func, "tied_weights", True
         )
         expected_params = self.n_components * n_features * (2 if is_untied else 1)
 
@@ -197,9 +194,8 @@ class ScipyOptimizer(BaseOptimizer):
 
         # For tied weights, return just the encoder matrix
         # For untied weights, we need to handle this differently in the main class
-        if (
-            hasattr(self.objective_func, "tied_weights")
-            and not self.objective_func.tied_weights
+        if hasattr(self.objective_func, "tied_weights") and not getattr(
+            self.objective_func, "tied_weights", True
         ):
             # Return the full parameter vector (will be handled by main class)
             return result_normalized, result.fun, info

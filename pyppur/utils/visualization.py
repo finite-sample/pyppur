@@ -2,13 +2,115 @@
 Visualization utilities for projection pursuit results.
 """
 
-from __future__ import annotations
-
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.axes import Axes
 from matplotlib.colors import Normalize
 from matplotlib.figure import Figure
+from mpl_toolkits.mplot3d import Axes3D
+
+
+def _plot_2d_embedding(
+    X_embedded: np.ndarray,
+    labels: np.ndarray | None = None,
+    title: str = "Projection Pursuit Embedding",
+    metrics: dict[str, float] | None = None,
+    figsize: tuple[float, float] = (10, 8),
+    cmap: str = "tab10",
+    alpha: float = 0.7,
+    s: float = 30.0,
+    ax: Axes | None = None,
+) -> tuple[Figure, Axes]:
+    """Plot 2D embedding."""
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+    else:
+        fig = ax.get_figure()
+
+    # Add metrics to title if provided
+    full_title = title
+    if metrics is not None:
+        metrics_str = ", ".join([f"{k}: {v:.4f}" for k, v in metrics.items()])
+        full_title = f"{title}\n{metrics_str}"
+
+    ax.set_title(full_title)
+
+    # Plot the 2D embedding
+    if labels is not None:
+        scatter = ax.scatter(
+            X_embedded[:, 0],
+            X_embedded[:, 1],
+            c=labels,
+            cmap=cmap,
+            alpha=alpha,
+            s=int(s),
+        )
+        plt.colorbar(scatter, ax=ax, label="Class")
+    else:
+        ax.scatter(X_embedded[:, 0], X_embedded[:, 1], alpha=alpha, s=int(s))
+
+    ax.set_xlabel("Component 1")
+    ax.set_ylabel("Component 2")
+    ax.grid(True, linestyle="--", alpha=0.7)
+
+    assert isinstance(fig, Figure)
+    return fig, ax
+
+
+def _plot_3d_embedding(
+    X_embedded: np.ndarray,
+    labels: np.ndarray | None = None,
+    title: str = "Projection Pursuit Embedding",
+    metrics: dict[str, float] | None = None,
+    figsize: tuple[float, float] = (10, 8),
+    cmap: str = "tab10",
+    alpha: float = 0.7,
+    s: float = 30.0,
+    ax: Axes3D | None = None,
+) -> tuple[Figure, Axes3D]:
+    """Plot 3D embedding."""
+    if ax is None:
+        fig = plt.figure(figsize=figsize)
+        ax = fig.add_subplot(111, projection="3d")
+    else:
+        fig = ax.get_figure()
+
+    # Add metrics to title if provided
+    full_title = title
+    if metrics is not None:
+        metrics_str = ", ".join([f"{k}: {v:.4f}" for k, v in metrics.items()])
+        full_title = f"{title}\n{metrics_str}"
+
+    ax.set_title(full_title)
+
+    # Plot the 3D embedding
+    if labels is not None:
+        scatter = ax.scatter(
+            X_embedded[:, 0],
+            X_embedded[:, 1],
+            X_embedded[:, 2],  # type: ignore[arg-type]  # matplotlib 3D scatter typing issue
+            c=labels,
+            cmap=cmap,
+            alpha=alpha,
+            s=int(s),
+        )
+        plt.colorbar(scatter, ax=ax, label="Class")
+    else:
+        ax.scatter(
+            X_embedded[:, 0],
+            X_embedded[:, 1],
+            X_embedded[:, 2],  # type: ignore[arg-type]  # matplotlib 3D scatter typing issue
+            alpha=alpha,
+            s=int(s),
+        )
+
+    ax.set_xlabel("Component 1")
+    ax.set_ylabel("Component 2")
+    ax.set_zlabel("Component 3")
+    ax.grid(True, linestyle="--", alpha=0.7)
+
+    assert isinstance(fig, Figure)
+    return fig, ax
 
 
 def plot_embedding(
@@ -20,8 +122,8 @@ def plot_embedding(
     cmap: str = "tab10",
     alpha: float = 0.7,
     s: float = 30.0,
-    ax: Axes | None = None,
-) -> tuple[Figure, Axes]:
+    ax: Axes | Axes3D | None = None,
+) -> tuple[Figure, Axes | Axes3D]:
     """Plot the results of a projection pursuit embedding.
 
     Args:
@@ -43,64 +145,23 @@ def plot_embedding(
             f"Can only plot 2D or 3D embeddings, got {X_embedded.shape[1]}D"
         )
 
-    is_3d = X_embedded.shape[1] == 3
-
-    if ax is None:
-        fig = plt.figure(figsize=figsize)
-        if is_3d:
-            ax = fig.add_subplot(111, projection="3d")
-        else:
-            ax = fig.add_subplot(111)
+    # Delegate to the appropriate function based on dimensionality
+    if X_embedded.shape[1] == 3:
+        # For 3D, ax can only be None or Axes3D
+        ax_3d = None if ax is None else ax
+        if ax_3d is not None and not isinstance(ax_3d, Axes3D):
+            raise ValueError("For 3D plots, ax must be an Axes3D instance or None")
+        return _plot_3d_embedding(
+            X_embedded, labels, title, metrics, figsize, cmap, alpha, s, ax_3d
+        )
     else:
-        fig = ax.figure
-
-    # Add metrics to title if provided
-    full_title = title
-    if metrics is not None:
-        metrics_str = ", ".join([f"{k}: {v:.4f}" for k, v in metrics.items()])
-        full_title = f"{title}\n{metrics_str}"
-
-    ax.set_title(full_title)
-
-    # Plot the embedding
-    if is_3d:
-        if labels is not None:
-            scatter = ax.scatter(
-                X_embedded[:, 0],
-                X_embedded[:, 1],
-                X_embedded[:, 2],
-                c=labels,
-                cmap=cmap,
-                alpha=alpha,
-                s=s,
-            )
-            plt.colorbar(scatter, ax=ax, label="Class")
-        else:
-            ax.scatter(
-                X_embedded[:, 0], X_embedded[:, 1], X_embedded[:, 2], alpha=alpha, s=s
-            )
-        ax.set_xlabel("Component 1")
-        ax.set_ylabel("Component 2")
-        ax.set_zlabel("Component 3")
-    else:
-        if labels is not None:
-            scatter = ax.scatter(
-                X_embedded[:, 0],
-                X_embedded[:, 1],
-                c=labels,
-                cmap=cmap,
-                alpha=alpha,
-                s=s,
-            )
-            plt.colorbar(scatter, ax=ax, label="Class")
-        else:
-            ax.scatter(X_embedded[:, 0], X_embedded[:, 1], alpha=alpha, s=s)
-        ax.set_xlabel("Component 1")
-        ax.set_ylabel("Component 2")
-
-    ax.grid(True, linestyle="--", alpha=0.7)
-
-    return fig, ax
+        # For 2D, ax can only be None or regular Axes
+        ax_2d = None if ax is None else ax
+        if ax_2d is not None and isinstance(ax_2d, Axes3D):
+            raise ValueError("For 2D plots, ax must be a regular Axes instance or None")
+        return _plot_2d_embedding(
+            X_embedded, labels, title, metrics, figsize, cmap, alpha, s, ax_2d
+        )
 
 
 def plot_reconstruction(

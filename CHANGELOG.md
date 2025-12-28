@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated to modern union syntax (`int | None` instead of `Optional[int]`)
   - Added comprehensive type annotations throughout the entire codebase
   - Enhanced function signatures with complete return type annotations
-  - Used `from __future__ import annotations` for forward references
+  - Removed unnecessary `from __future__ import annotations` (Python 3.12+ default)
   - Added proper type hints to test functions and fixtures
 
 - **Comprehensive docstring standardization**
@@ -29,8 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Technical Details
 - All modules updated: core, objectives, optimizers, utils, tests, examples
+  - Modernized API requires proper enum usage (no string parameters)
+  - Removed deprecated class aliases and backward compatibility code
+  - Clean, modern Python 3.12+ codebase with zero legacy cruft
 - Sphinx documentation already configured with Furo theme and Napoleon for Google docstrings
-- Full backward compatibility maintained - no breaking API changes
 - All tests pass with modernized codebase
 
 ## [0.3.1] - 2025-09-18
@@ -73,8 +75,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Consistent normalization across all methods
 
 ### Changed
-- **Enhanced API with backward compatibility**
-  - All existing code continues to work unchanged
+- **Enhanced and modernized API**
+  - Modern enum-based parameter system
   - New parameters have sensible defaults
   - Improved parameter validation and error messages
 - **Updated mathematical formulations in documentation**

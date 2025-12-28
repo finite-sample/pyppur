@@ -1,7 +1,5 @@
 """Basic usage examples for pyppur."""
 
-from __future__ import annotations
-
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_digits
 from sklearn.preprocessing import StandardScaler
@@ -14,8 +12,8 @@ def digits_example() -> None:
     """Example with the digits dataset."""
     # Load data
     digits = load_digits()
-    X = digits.data
-    y = digits.target
+    X = digits.data  # type: ignore[attr-defined]
+    y = digits.target  # type: ignore[attr-defined]
 
     # Standardize the data
     scaler = StandardScaler()

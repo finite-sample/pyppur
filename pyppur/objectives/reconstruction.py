@@ -2,8 +2,6 @@
 Reconstruction loss objective for projection pursuit.
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 import numpy as np
@@ -91,7 +89,7 @@ class ReconstructionObjective(BaseObjective):
         if not self.tied_weights and self.l2_reg > 0:
             loss += self.l2_reg * np.mean(b_matrix**2)
 
-        return loss
+        return float(loss)
 
     def reconstruct(
         self, X: np.ndarray, a_matrix: np.ndarray, b_matrix: np.ndarray | None = None

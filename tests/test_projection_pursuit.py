@@ -1,7 +1,5 @@
 """Tests for the ProjectionPursuit class."""
 
-from __future__ import annotations
-
 import numpy as np
 import pytest
 from sklearn.datasets import load_digits, make_swiss_roll
@@ -14,8 +12,8 @@ from pyppur import Objective, ProjectionPursuit
 def digits_data() -> tuple[np.ndarray, np.ndarray]:
     """Fixture for digits dataset."""
     digits = load_digits()
-    X = digits.data[:100]  # Subset for faster testing
-    y = digits.target[:100]
+    X = digits.data[:100]  # type: ignore[attr-defined] # Subset for faster testing
+    y = digits.target[:100]  # type: ignore[attr-defined]
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
@@ -57,13 +55,9 @@ def test_init() -> None:
     assert pp.max_iter == 1000
     assert pp.random_state == 42
 
-    # Test string objective
-    pp = ProjectionPursuit(objective="reconstruction")
+    # Test enum objective
+    pp = ProjectionPursuit(objective=Objective.RECONSTRUCTION)
     assert pp.objective == Objective.RECONSTRUCTION
-
-    # Test invalid objective
-    with pytest.raises(ValueError):
-        ProjectionPursuit(objective="invalid")
 
 
 def test_distance_distortion_pipeline(

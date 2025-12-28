@@ -2,39 +2,18 @@
 Base class for objective functions.
 """
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any
 
 import numpy as np
 
 
-class Objective:
+class Objective(str, Enum):
     """Objective types for projection pursuit."""
 
     DISTANCE_DISTORTION = "distance_distortion"
     RECONSTRUCTION = "reconstruction"
-
-    def __new__(cls, value: str | None = None) -> str:
-        """Create an objective type from a string value.
-
-        Args:
-            value: Objective type to validate.
-
-        Returns:
-            Validated objective type.
-
-        Raises:
-            ValueError: If the objective type is invalid.
-        """
-        if value is None:
-            return cls.DISTANCE_DISTORTION
-
-        if value in (cls.DISTANCE_DISTORTION, cls.RECONSTRUCTION):
-            return value
-
-        raise ValueError(f"Invalid objective type: {value}")
 
 
 # Base abstract objective class

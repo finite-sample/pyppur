@@ -2,8 +2,6 @@
 Distance distortion objective for projection pursuit.
 """
 
-from __future__ import annotations
-
 from typing import Any
 
 import numpy as np
@@ -99,8 +97,6 @@ class DistanceObjective(BaseObjective):
         else:
             loss = np.mean((dist_X - dist_Z) ** 2)
 
-        return loss
+        return float(loss)
 
 
-# Alias for backward compatibility
-DistanceDistortionObjective = DistanceObjective

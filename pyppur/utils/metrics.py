@@ -2,8 +2,6 @@
 Evaluation metrics for dimensionality reduction.
 """
 
-from __future__ import annotations
-
 import warnings
 
 import numpy as np
@@ -79,7 +77,7 @@ def compute_distance_distortion(
     # Calculate distortion
     distortion = np.mean((dist_original - dist_embedded) ** 2)
 
-    return distortion
+    return float(distortion)
 
 
 def evaluate_embedding(

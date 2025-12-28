@@ -7,7 +7,7 @@ import pytest
 from scipy.spatial.distance import pdist, squareform
 
 from pyppur.objectives.base import BaseObjective, Objective
-from pyppur.objectives.distance import DistanceDistortionObjective
+from pyppur.objectives.distance import DistanceObjective
 from pyppur.objectives.reconstruction import ReconstructionObjective
 
 
@@ -39,7 +39,7 @@ def test_distance_distortion_objective():
     dist_X = squareform(pdist(X, metric="euclidean"))
 
     # Create objective
-    objective = DistanceDistortionObjective(alpha=1.0)
+    objective = DistanceObjective(alpha=1.0)
 
     # Create projection directions
     A = np.random.randn(n_components, X.shape[1])
@@ -56,7 +56,7 @@ def test_distance_distortion_objective():
     weight_matrix = weight_matrix / weight_matrix.sum()
     np.fill_diagonal(weight_matrix, 0)
 
-    objective_weighted = DistanceDistortionObjective(alpha=1.0, weight_by_distance=True)
+    objective_weighted = DistanceObjective(alpha=1.0, weight_by_distance=True)
     loss_weighted = objective_weighted(
         a_flat, X, n_components, dist_X=dist_X, weight_matrix=weight_matrix
     )
@@ -90,16 +90,17 @@ def test_reconstruction_objective():
 
 
 def test_objective_validation_edge_cases():
-    """Test objective validation edge cases."""
-    # Test with None
-    assert Objective() == Objective.DISTANCE_DISTORTION
+    """Test objective validation with modern enum."""
+    # Test enum values
+    assert Objective.DISTANCE_DISTORTION == "distance_distortion"
+    assert Objective.RECONSTRUCTION == "reconstruction"
 
-    # Test with valid strings
+    # Test enum instantiation from string values
     assert Objective("distance_distortion") == Objective.DISTANCE_DISTORTION
     assert Objective("reconstruction") == Objective.RECONSTRUCTION
 
     # Test with invalid string
-    with pytest.raises(ValueError, match="Invalid objective type"):
+    with pytest.raises(ValueError):
         Objective("invalid_objective")
 
 

@@ -2,8 +2,6 @@
 Main implementation of Projection Pursuit for dimensionality reduction.
 """
 
-from __future__ import annotations
-
 import time
 import warnings
 from typing import Any
@@ -32,31 +30,12 @@ class ProjectionPursuit:
     This class provides methods to find optimal projections by minimizing
     either reconstruction loss or distance distortion. It supports both
     initialization strategies and different optimizers.
-
-    Attributes:
-        n_components: Number of projection dimensions
-        objective: Optimization objective (distance distortion or reconstruction)
-        alpha: Steepness parameter for the ridge function
-        max_iter: Maximum number of iterations for optimization
-        tol: Tolerance for optimization convergence
-        random_state: Random seed for reproducibility
-        optimizer: Optimization method ('L-BFGS-B' recommended)
-        n_init: Number of random initializations
-        verbose: Whether to print progress information
-        center: Whether to center the data
-        scale: Whether to scale the data
-        weight_by_distance: Whether to weight distance distortion by inverse of
-            original distances
-        tied_weights: Whether to use tied weights (encoder=decoder) for reconstruction
-        l2_reg: L2 regularization strength for decoder weights (when tied_weights=False)
-        use_nonlinearity_in_distance: Whether to apply ridge function before
-            computing distances
     """
 
     def __init__(
         self,
         n_components: int = 2,
-        objective: Objective | str = Objective.DISTANCE_DISTORTION,
+        objective: Objective = Objective.DISTANCE_DISTORTION,
         alpha: float = 1.0,
         max_iter: int = 500,
         tol: float = 1e-6,
@@ -75,8 +54,7 @@ class ProjectionPursuit:
 
         Args:
             n_components: Number of projection dimensions to use.
-            objective: Optimization objective, either "distance_distortion" or
-                "reconstruction".
+            objective: Optimization objective enum value.
             alpha: Steepness parameter for the ridge function g(z) = tanh(alpha * z).
             max_iter: Maximum number of iterations for optimization.
             tol: Tolerance for optimization convergence.
@@ -97,17 +75,7 @@ class ProjectionPursuit:
         """
         self.n_components = n_components
 
-        if isinstance(objective, str):
-            try:
-                self.objective = Objective(objective)
-            except ValueError:
-                # List the valid objective types directly
-                raise ValueError(
-                    f"Objective must be one of "
-                    f"{[Objective.DISTANCE_DISTORTION, Objective.RECONSTRUCTION]}"
-                )
-        else:
-            self.objective = objective
+        self.objective = objective
 
         self.alpha = alpha
         self.max_iter = max_iter
@@ -169,6 +137,10 @@ class ProjectionPursuit:
         else:
             X_scaled = X
             self._scaler = None
+
+        # Initialize variables for distance distortion
+        dist_X: np.ndarray | None = None
+        weight_matrix: np.ndarray | None = None
 
         # Initialize objective function
         if self.objective == Objective.RECONSTRUCTION:
@@ -282,23 +254,28 @@ class ProjectionPursuit:
         self._best_loss = best_loss
 
         # Handle storage for tied vs untied weights
-        if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
-            # For untied weights, best_a contains both encoder and decoder
-            n_encoder_params = self.n_components * n_features
-            self._x_loadings = best_a[:n_encoder_params].reshape(
-                self.n_components, n_features
-            )
-            self._decoder_weights = best_a[n_encoder_params:].reshape(
-                self.n_components, n_features
-            )
-        else:
-            # For tied weights or distance distortion, just encoder
-            if isinstance(best_a, np.ndarray) and best_a.ndim == 1:
-                self._x_loadings = best_a[: self.n_components * n_features].reshape(
+        if best_a is not None:
+            if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
+                # For untied weights, best_a contains both encoder and decoder
+                n_encoder_params = self.n_components * n_features
+                self._x_loadings = best_a[:n_encoder_params].reshape(
+                    self.n_components, n_features
+                )
+                self._decoder_weights = best_a[n_encoder_params:].reshape(
                     self.n_components, n_features
                 )
             else:
-                self._x_loadings = best_a
+                # For tied weights or distance distortion, just encoder
+                if isinstance(best_a, np.ndarray) and best_a.ndim == 1:
+                    self._x_loadings = best_a[: self.n_components * n_features].reshape(
+                        self.n_components, n_features
+                    )
+                else:
+                    self._x_loadings = best_a
+                self._decoder_weights = None
+        else:
+            # This should not happen, but handle it gracefully
+            self._x_loadings = None
             self._decoder_weights = None
 
         self._fitted = True
@@ -328,7 +305,7 @@ class ProjectionPursuit:
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
-            X_scaled = self._scaler.transform(X)
+            X_scaled = np.asarray(self._scaler.transform(X))
         else:
             X_scaled = X
 
@@ -381,7 +358,7 @@ class ProjectionPursuit:
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
-            X_scaled = self._scaler.transform(X)
+            X_scaled = np.asarray(self._scaler.transform(X))
         else:
             X_scaled = X
 
@@ -420,7 +397,7 @@ class ProjectionPursuit:
             Mean squared reconstruction error.
         """
         X_hat = self.reconstruct(X)
-        return np.mean((X - X_hat) ** 2)
+        return float(np.mean((X - X_hat) ** 2))
 
     def distance_distortion(self, X: np.ndarray) -> float:
         """Compute the distance distortion for X.
@@ -444,7 +421,7 @@ class ProjectionPursuit:
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
-            X_scaled = self._scaler.transform(X)
+            X_scaled = np.asarray(self._scaler.transform(X))
         else:
             X_scaled = X
 
@@ -460,6 +437,7 @@ class ProjectionPursuit:
         Y = X_scaled @ x_loadings_normalized.T
 
         if self.use_nonlinearity_in_distance:
+            assert self._objective_func is not None
             Z = self._objective_func.g(Y, self.alpha)
         else:
             Z = Y
@@ -469,7 +447,7 @@ class ProjectionPursuit:
         # Compute distance distortion
         distortion = np.mean((dist_X - dist_Z) ** 2)
 
-        return distortion
+        return float(distortion)
 
     def compute_trustworthiness(self, X: np.ndarray, n_neighbors: int = 5) -> float:
         """Compute the trustworthiness score for the dimensionality reduction.
@@ -498,7 +476,7 @@ class ProjectionPursuit:
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
-            X_scaled = self._scaler.transform(X)
+            X_scaled = np.asarray(self._scaler.transform(X))
         else:
             X_scaled = X
 
@@ -571,7 +549,7 @@ class ProjectionPursuit:
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
-            X_scaled = self._scaler.transform(X)
+            X_scaled = np.asarray(self._scaler.transform(X))
         else:
             X_scaled = X
 

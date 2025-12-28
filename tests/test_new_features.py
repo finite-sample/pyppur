@@ -126,8 +126,12 @@ def test_l2_regularization():
     pp_reg.fit(X)
 
     # Regularized model should have smaller decoder weights on average
-    decoder_norm_no_reg = np.linalg.norm(pp_no_reg.decoder_weights_)
-    decoder_norm_reg = np.linalg.norm(pp_reg.decoder_weights_)
+    decoder_no_reg = pp_no_reg.decoder_weights_
+    decoder_reg = pp_reg.decoder_weights_
+    assert decoder_no_reg is not None
+    assert decoder_reg is not None
+    decoder_norm_no_reg = np.linalg.norm(decoder_no_reg)
+    decoder_norm_reg = np.linalg.norm(decoder_reg)
 
     # This test might be flaky due to optimization randomness, so we just check
     # they're different
@@ -177,28 +181,6 @@ def test_parameter_validation():
         assert "n_components" in str(user_warnings[0].message)
     assert pp.n_components == 5  # Should be adjusted to n_features
 
-
-def test_api_compatibility():
-    """Test that the API remains backward compatible."""
-    np.random.seed(42)
-    X = np.random.randn(30, 8)
-
-    # Old API should still work
-    pp_old_style = ProjectionPursuit(
-        n_components=2,
-        objective="reconstruction",
-        alpha=1.5,
-        max_iter=20,
-        random_state=42,
-    )
-
-    # Should fit and transform without issues
-    Z = pp_old_style.fit_transform(X)
-    assert Z.shape == (30, 2)
-
-    # Properties should work
-    assert pp_old_style.x_loadings_.shape == (2, 8)
-    assert pp_old_style.decoder_weights_ is None  # Default tied weights
 
 
 def test_decoder_weights_property():

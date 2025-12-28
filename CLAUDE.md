@@ -15,11 +15,11 @@ python3 -m pytest --cov=pyppur --cov-report=term-missing # Run tests with covera
 
 ### Code Quality
 ```bash
-python3 -m ruff check pyppur/ tests/ # Lint code with Ruff
+python3 -m ruff check pyppur/ tests/ # Lint code with Ruff (includes pydoclint checks)
 python3 -m ruff check --fix pyppur/ tests/  # Fix linting issues automatically
 python3 -m ruff format pyppur/ tests/  # Format code with Ruff
 python3 -m ruff format --check pyppur/ tests/  # Check formatting without changing
-# Note: mypy is disabled in CI (requires systematic type design work)
+pyright  # Run type checking with Pyright
 # IMPORTANT: Always test locally before committing changes
 ```
 
@@ -42,9 +42,9 @@ pip install -e .[docs]    # Install doc dependencies from pyproject.toml
 
 ### CI/CD
 - GitHub Actions workflow runs on push/PR to main
-- Tests run on Python 3.10, 3.11, 3.12, 3.13
-- Code quality checks (Ruff for linting and formatting)
-- mypy disabled (requires systematic type design work)
+- Tests run on Python 3.12, 3.13, 3.14
+- Code quality checks (Ruff for linting, formatting, and docstring checks via pydoclint)
+- Type checking with Pyright
 - Coverage reporting in terminal
 - Package build verification
 - Documentation builds with GitHub Pages deployment
@@ -61,7 +61,7 @@ pip install -e .[docs]    # Install doc dependencies from pyproject.toml
 
 **Objective Functions (`pyppur/objectives/`)**
 - `BaseObjective`: Abstract base class defining the ridge function interface
-- `DistanceDistortionObjective`: Minimizes pairwise distance differences between original and projected spaces
+- `DistanceObjective`: Minimizes pairwise distance differences between original and projected spaces
 - `ReconstructionObjective`: Minimizes reconstruction error using ridge function autoencoders
 - Ridge function: g(z) = tanh(alpha * z) where alpha controls steepness
 
@@ -95,9 +95,9 @@ pip install -e .[docs]    # Install doc dependencies from pyproject.toml
 
 ### Configuration Details
 
-**Python Requirements**: 3.10+ (CI tests on 3.10, 3.11, 3.12, 3.13)
+**Python Requirements**: 3.12+ (CI tests on 3.12, 3.13, 3.14)
 **Key Dependencies**: numpy, scipy, scikit-learn
 **Code Style**: Ruff for linting and formatting (88 char line length)
 **Dependency Management**: All dependencies in pyproject.toml (no requirements.txt files)
 **Documentation**: Sphinx with importlib.metadata (no version duplication)
-**Type Checking**: mypy disabled in CI (requires systematic type design work)
+**Type Checking**: Pyright for static type analysis
