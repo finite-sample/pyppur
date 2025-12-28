@@ -65,6 +65,7 @@ test = ["pytest>=7.0", "pytest-cov>=4.0"]
 [tool.ruff]
 line-length = 88
 target-version = "py312"
+preview = true
 
 [tool.ruff.lint]
 # Enable pycodestyle (`E`), Pyflakes (`F`), isort (`I`), and pydoclint (`DOC`) codes

@@ -120,9 +120,10 @@ class ScipyOptimizer(BaseOptimizer):
             # Add decoder for untied weights
             if is_untied:
                 decoder_guess = np.random.randn(self.n_components, n_features) * 0.1
-                initial_guess_flat = np.concatenate(
-                    [initial_guess_flat, decoder_guess.flatten()]
-                )
+                initial_guess_flat = np.concatenate([
+                    initial_guess_flat,
+                    decoder_guess.flatten(),
+                ])
         else:
             # Handle both tied and untied weights initial guess
             if initial_guess.size == expected_params:
@@ -133,9 +134,10 @@ class ScipyOptimizer(BaseOptimizer):
                 initial_guess_flat = initial_guess.flatten()
                 if is_untied:
                     decoder_guess = np.random.randn(self.n_components, n_features) * 0.1
-                    initial_guess_flat = np.concatenate(
-                        [initial_guess_flat, decoder_guess.flatten()]
-                    )
+                    initial_guess_flat = np.concatenate([
+                        initial_guess_flat,
+                        decoder_guess.flatten(),
+                    ])
             else:
                 raise ValueError(
                     f"Initial guess size {initial_guess.size} does not match "
