@@ -98,5 +98,3 @@ class DistanceObjective(BaseObjective):
             loss = np.mean((dist_X - dist_Z) ** 2)
 
         return float(loss)
-
-

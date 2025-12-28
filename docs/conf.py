@@ -17,6 +17,7 @@ extensions = [
 
 html_theme = "furo"
 
+
 # MyST settings
 myst_enable_extensions = [
     "colon_fence",
@@ -24,9 +25,9 @@ myst_enable_extensions = [
 ]
 
 # Intersphinx
-intersphinx_mapping = {{
+intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
-}}
+}
 
 # Napoleon settings (Google style)
 napoleon_google_docstring = True

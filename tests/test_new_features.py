@@ -182,7 +182,6 @@ def test_parameter_validation():
     assert pp.n_components == 5  # Should be adjusted to n_features
 
 
-
 def test_decoder_weights_property():
     """Test the decoder_weights_ property."""
     np.random.seed(42)
