@@ -2,28 +2,36 @@
 Distance distortion objective for projection pursuit.
 """
 
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
+from scipy.stats import spearmanr
 
 from pyppur.objectives.base import BaseObjective
 
+DistanceMetric = Literal["mse", "correlation", "spearman"]
 
-# Rename the class to match the import
+
 class DistanceObjective(BaseObjective):
     """Distance distortion objective function for projection pursuit.
 
     This objective minimizes the difference between pairwise distances
     in the original space and the projected space. Can optionally apply
     ridge function nonlinearity before distance computation.
+
+    The distance_metric parameter controls how distance preservation is measured:
+    - 'mse': Mean squared error between distance matrices (default, scale-sensitive)
+    - 'correlation': Negative Pearson correlation (scale-invariant, recommended)
+    - 'spearman': Negative Spearman rank correlation (scale and monotonic-invariant)
     """
 
     def __init__(
         self,
-        alpha: float = 1.0,
+        alpha: float = 0.1,
         weight_by_distance: bool = False,
         use_nonlinearity: bool = True,
+        distance_metric: DistanceMetric = "correlation",
         **kwargs: Any,
     ) -> None:
         """Initialize the distance distortion objective.
@@ -34,11 +42,21 @@ class DistanceObjective(BaseObjective):
                 original distances.
             use_nonlinearity: Whether to apply ridge function before computing
                 distances.
+            distance_metric: How to measure distance preservation. Options:
+                - 'mse': Mean squared error (scale-sensitive, original behavior)
+                - 'correlation': Negative Pearson correlation (scale-invariant)
+                - 'spearman': Negative Spearman rank correlation
             **kwargs: Additional keyword arguments.
         """
         super().__init__(alpha=alpha, **kwargs)
         self.weight_by_distance = weight_by_distance
         self.use_nonlinearity = use_nonlinearity
+        if distance_metric not in ("mse", "correlation", "spearman"):
+            raise ValueError(
+                f"distance_metric must be 'mse', 'correlation', or 'spearman', "
+                f"got '{distance_metric}'"
+            )
+        self.distance_metric = distance_metric
 
     def __call__(
         self,
@@ -91,10 +109,41 @@ class DistanceObjective(BaseObjective):
         # Compute distances in projection space
         dist_Z = squareform(pdist(Z, metric="euclidean"))
 
-        # Calculate the distortion with optional weighting
-        if weight_matrix is not None:
-            loss = np.mean(weight_matrix * (dist_X - dist_Z) ** 2)
-        else:
-            loss = np.mean((dist_X - dist_Z) ** 2)
+        # Calculate the distortion based on the chosen metric
+        if self.distance_metric == "correlation":
+            # Use Pearson correlation (scale-invariant)
+            # Extract upper triangular elements (excluding diagonal)
+            triu_idx = np.triu_indices_from(dist_X, k=1)
+            d_orig_flat = dist_X[triu_idx]
+            d_embed_flat = dist_Z[triu_idx]
+
+            # Compute Pearson correlation
+            if np.std(d_embed_flat) < 1e-10:
+                # If all embedded distances are the same, correlation is undefined
+                return 1.0
+
+            corr = np.corrcoef(d_orig_flat, d_embed_flat)[0, 1]
+            # Minimize negative correlation (maximize correlation)
+            loss = -corr
+
+        elif self.distance_metric == "spearman":
+            # Use Spearman rank correlation (scale and monotonic-invariant)
+            triu_idx = np.triu_indices_from(dist_X, k=1)
+            d_orig_flat = dist_X[triu_idx]
+            d_embed_flat = dist_Z[triu_idx]
+
+            if np.std(d_embed_flat) < 1e-10:
+                return 1.0
+
+            result = spearmanr(d_orig_flat, d_embed_flat)
+            corr = float(result.correlation)  # type: ignore[union-attr]
+            loss = -corr
+
+        else:  # mse
+            # Mean squared error (original behavior, scale-sensitive)
+            if weight_matrix is not None:
+                loss = np.mean(weight_matrix * (dist_X - dist_Z) ** 2)
+            else:
+                loss = np.mean((dist_X - dist_Z) ** 2)
 
         return float(loss)

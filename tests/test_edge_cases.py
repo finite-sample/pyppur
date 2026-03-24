@@ -170,7 +170,7 @@ def test_projection_pursuit_properties():
     assert len(pp.loss_curve_) > 0
 
     assert isinstance(pp.best_loss_, float)
-    assert pp.best_loss_ >= 0.0
+    # Note: best_loss_ can be negative for correlation metric (we minimize -correlation)
 
     assert isinstance(pp.fit_time_, float)
     assert pp.fit_time_ >= 0.0

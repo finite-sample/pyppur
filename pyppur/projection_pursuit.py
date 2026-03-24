@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 
 from pyppur.objectives import Objective
 from pyppur.objectives.base import BaseObjective
-from pyppur.objectives.distance import DistanceObjective
+from pyppur.objectives.distance import DistanceMetric, DistanceObjective
 from pyppur.objectives.reconstruction import ReconstructionObjective
 from pyppur.optimizers import ScipyOptimizer
 from pyppur.utils.metrics import (
@@ -36,7 +36,7 @@ class ProjectionPursuit:
         self,
         n_components: int = 2,
         objective: Objective = Objective.DISTANCE_DISTORTION,
-        alpha: float = 1.0,
+        alpha: float = 0.1,
         max_iter: int = 500,
         tol: float = 1e-6,
         random_state: int | None = None,
@@ -49,6 +49,7 @@ class ProjectionPursuit:
         tied_weights: bool = True,
         l2_reg: float = 0.0,
         use_nonlinearity_in_distance: bool = True,
+        distance_metric: DistanceMetric = "correlation",
     ) -> None:
         """Initialize a ProjectionPursuit model.
 
@@ -56,6 +57,7 @@ class ProjectionPursuit:
             n_components: Number of projection dimensions to use.
             objective: Optimization objective enum value.
             alpha: Steepness parameter for the ridge function g(z) = tanh(alpha * z).
+                Lower values (0.01-0.1) work better for distance preservation.
             max_iter: Maximum number of iterations for optimization.
             tol: Tolerance for optimization convergence.
             random_state: Random seed for reproducibility.
@@ -72,6 +74,9 @@ class ProjectionPursuit:
                 tied_weights=False).
             use_nonlinearity_in_distance: Whether to apply ridge function before
                 computing distances.
+            distance_metric: How to measure distance preservation. Options:
+                'mse' (scale-sensitive), 'correlation' (scale-invariant),
+                'spearman' (rank-based). Default is 'correlation'.
         """
         self.n_components = n_components
 
@@ -90,6 +95,7 @@ class ProjectionPursuit:
         self.tied_weights = tied_weights
         self.l2_reg = l2_reg
         self.use_nonlinearity_in_distance = use_nonlinearity_in_distance
+        self.distance_metric: DistanceMetric = distance_metric
 
         # Private attributes
         self._fitted = False
@@ -165,6 +171,7 @@ class ProjectionPursuit:
                 alpha=self.alpha,
                 weight_by_distance=self.weight_by_distance,
                 use_nonlinearity=self.use_nonlinearity_in_distance,
+                distance_metric=self.distance_metric,
             )
             # objective_kwargs = {"dist_X": dist_X, "weight_matrix": weight_matrix}
             # used in optimization calls below

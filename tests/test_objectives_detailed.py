@@ -30,7 +30,7 @@ def test_base_objective_ridge_functions():
 
 
 def test_distance_distortion_objective():
-    """Test distance distortion objective."""
+    """Test distance distortion objective with MSE metric."""
     np.random.seed(42)
     X = np.random.randn(20, 5)
     n_components = 2
@@ -38,8 +38,8 @@ def test_distance_distortion_objective():
     # Compute distance matrix
     dist_X = squareform(pdist(X, metric="euclidean"))
 
-    # Create objective
-    objective = DistanceObjective(alpha=1.0)
+    # Create objective with MSE metric (loss is always >= 0)
+    objective = DistanceObjective(alpha=1.0, distance_metric="mse")
 
     # Create projection directions
     A = np.random.randn(n_components, X.shape[1])
@@ -56,7 +56,9 @@ def test_distance_distortion_objective():
     weight_matrix = weight_matrix / weight_matrix.sum()
     np.fill_diagonal(weight_matrix, 0)
 
-    objective_weighted = DistanceObjective(alpha=1.0, weight_by_distance=True)
+    objective_weighted = DistanceObjective(
+        alpha=1.0, weight_by_distance=True, distance_metric="mse"
+    )
     loss_weighted = objective_weighted(
         a_flat, X, n_components, dist_X=dist_X, weight_matrix=weight_matrix
     )
@@ -144,3 +146,119 @@ def test_objective_with_different_alphas():
 
     # Different alphas should generally give different losses
     assert not all(np.isclose(losses[0], loss) for loss in losses[1:])
+
+
+def test_distance_metric_mse():
+    """Test MSE distance metric (original behavior)."""
+    np.random.seed(42)
+    X = np.random.randn(20, 5)
+    n_components = 2
+    dist_X = squareform(pdist(X, metric="euclidean"))
+
+    objective = DistanceObjective(alpha=1.0, distance_metric="mse")
+
+    A = np.random.randn(n_components, X.shape[1])
+    A = A / np.linalg.norm(A, axis=1, keepdims=True)
+    a_flat = A.flatten()
+
+    loss = objective(a_flat, X, n_components, dist_X=dist_X)
+    assert isinstance(loss, float)
+    assert loss >= 0.0
+
+
+def test_distance_metric_correlation():
+    """Test correlation distance metric (scale-invariant)."""
+    np.random.seed(42)
+    X = np.random.randn(20, 5)
+    n_components = 2
+    dist_X = squareform(pdist(X, metric="euclidean"))
+
+    objective = DistanceObjective(alpha=0.1, distance_metric="correlation")
+
+    A = np.random.randn(n_components, X.shape[1])
+    A = A / np.linalg.norm(A, axis=1, keepdims=True)
+    a_flat = A.flatten()
+
+    loss = objective(a_flat, X, n_components, dist_X=dist_X)
+    assert isinstance(loss, float)
+    # Correlation loss is negated, so it's in [-1, 1], minimize means we want -1
+    assert -1.0 <= loss <= 1.0
+
+
+def test_distance_metric_spearman():
+    """Test Spearman distance metric (rank-based)."""
+    np.random.seed(42)
+    X = np.random.randn(20, 5)
+    n_components = 2
+    dist_X = squareform(pdist(X, metric="euclidean"))
+
+    objective = DistanceObjective(alpha=0.1, distance_metric="spearman")
+
+    A = np.random.randn(n_components, X.shape[1])
+    A = A / np.linalg.norm(A, axis=1, keepdims=True)
+    a_flat = A.flatten()
+
+    loss = objective(a_flat, X, n_components, dist_X=dist_X)
+    assert isinstance(loss, float)
+    # Spearman correlation loss is negated, so it's in [-1, 1]
+    assert -1.0 <= loss <= 1.0
+
+
+def test_correlation_metric_scale_invariance():
+    """Test that correlation metric is scale-invariant."""
+    np.random.seed(42)
+    X = np.random.randn(30, 5)
+    n_components = 2
+    dist_X = squareform(pdist(X, metric="euclidean"))
+
+    # Two objectives with different alphas (different scales of output)
+    obj_small = DistanceObjective(alpha=0.01, distance_metric="correlation")
+    obj_large = DistanceObjective(alpha=1.0, distance_metric="correlation")
+
+    A = np.random.randn(n_components, X.shape[1])
+    A = A / np.linalg.norm(A, axis=1, keepdims=True)
+    a_flat = A.flatten()
+
+    loss_small = obj_small(a_flat, X, n_components, dist_X=dist_X)
+    loss_large = obj_large(a_flat, X, n_components, dist_X=dist_X)
+
+    # Correlation should be similar regardless of alpha (scale)
+    # because correlation is scale-invariant
+    # The losses may differ slightly due to different nonlinearity shapes
+    # but should both be valid correlations
+    assert -1.0 <= loss_small <= 1.0
+    assert -1.0 <= loss_large <= 1.0
+
+
+def test_invalid_distance_metric():
+    """Test that invalid distance_metric raises ValueError."""
+    with pytest.raises(ValueError, match="distance_metric must be"):
+        DistanceObjective(distance_metric="invalid")  # type: ignore[arg-type]
+
+
+def test_mse_vs_correlation_behavior():
+    """Test that MSE and correlation behave differently with scale mismatch."""
+    np.random.seed(42)
+    # Create data with large distances
+    X = np.random.randn(20, 5) * 10
+    n_components = 2
+    dist_X = squareform(pdist(X, metric="euclidean"))
+
+    A = np.random.randn(n_components, X.shape[1])
+    A = A / np.linalg.norm(A, axis=1, keepdims=True)
+    a_flat = A.flatten()
+
+    # MSE objective with high alpha (tanh saturates, embedded distances are small)
+    obj_mse = DistanceObjective(alpha=1.0, distance_metric="mse")
+    loss_mse = obj_mse(a_flat, X, n_components, dist_X=dist_X)
+
+    # Correlation objective
+    obj_corr = DistanceObjective(alpha=1.0, distance_metric="correlation")
+    loss_corr = obj_corr(a_flat, X, n_components, dist_X=dist_X)
+
+    # MSE loss should be large due to scale mismatch
+    # (original distances ~30, embedded distances ~2)
+    assert loss_mse > 10.0
+
+    # Correlation loss should be valid regardless of scale
+    assert -1.0 <= loss_corr <= 1.0

@@ -77,34 +77,69 @@ where:
 Distance Distortion Objectives
 ------------------------------
 
-Distance Distortion with Nonlinearity (Default)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Distance Metrics
+~~~~~~~~~~~~~~~~
 
-The default distance objective compares pairwise distances between the original space and 
+pyppur supports three distance metrics for measuring how well pairwise distances are preserved.
+The choice of metric significantly affects optimization performance due to scale considerations.
+
+**Correlation Metric (Default, Recommended)**
+
+The correlation metric maximizes Pearson correlation between distance matrices:
+
+.. math::
+   L_{\text{corr}} = -\rho(d_X, d_Z)
+
+where :math:`\rho` is the Pearson correlation coefficient computed over the upper triangular
+elements of the distance matrices (excluding diagonal).
+
+This metric is **scale-invariant**, making it robust to the scale mismatch between original
+distances (which can be large) and embedded distances (bounded by tanh to approximately 2.83 max).
+
+**Spearman Metric**
+
+The Spearman metric uses rank correlation:
+
+.. math::
+   L_{\text{spearman}} = -\rho_s(d_X, d_Z)
+
+where :math:`\rho_s` is the Spearman rank correlation. This is useful when only the relative
+ordering of distances matters, not their exact values.
+
+**MSE Metric (Original Behavior)**
+
+The MSE metric directly minimizes squared differences:
+
+.. math::
+   L_{\text{mse}} = \frac{1}{n^2} \sum_{i,j} (d_{X}(i,j) - d_{Z}(i,j))^2
+
+**Warning**: This metric is scale-sensitive. When using tanh nonlinearity, embedded distances
+are bounded while original distances may be large, causing optimization difficulties.
+
+Distance Distortion with Nonlinearity
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The default distance objective compares pairwise distances between the original space and
 the nonlinearly transformed projection:
 
 .. math::
-   L_{\text{dist-nl}} = \frac{1}{n^2} \sum_{i,j} (d_{X}(i,j) - d_{Z}(i,j))^2
+   Z = g(X A^T)
 
 where:
 
 * :math:`d_X(i,j) = \|x_i - x_j\|_2` are pairwise distances in the original space
 * :math:`d_Z(i,j) = \|z_i - z_j\|_2` are pairwise distances in the transformed space
-* :math:`Z = g(X A^T)` is the nonlinearly transformed projection
+* :math:`g(\cdot) = \tanh(\alpha \cdot)` is the ridge function
 
-Linear Distance Distortion  
+Linear Distance Distortion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 With ``use_nonlinearity_in_distance=False``, distances are compared in the linear projection space:
 
 .. math::
-   L_{\text{dist-linear}} = \frac{1}{n^2} \sum_{i,j} (d_{X}(i,j) - d_{Y}(i,j))^2
+   Y = X A^T
 
-where:
-
-* :math:`Y = X A^T` is the linear projection
-* :math:`d_Y(i,j) = \|y_i - y_j\|_2` are distances in the linear projection space
-
+where :math:`d_Y(i,j) = \|y_i - y_j\|_2` are distances in the linear projection space.
 This reduces to classical multidimensional scaling when :math:`k = p`.
 
 Weighted Distance Distortion
@@ -121,6 +156,8 @@ where the weights are:
    w_{ij} = \frac{1}{d_X(i,j) + \epsilon}
 
 with :math:`\epsilon = 0.1` to avoid division by zero, and weights are normalized to sum to 1.
+
+Note: Weighted distortion is only used with the MSE metric.
 
 Optimization
 ------------
@@ -220,3 +257,19 @@ vs. Autoencoders
 
 * **Neural autoencoders**: Multiple hidden layers with arbitrary activations
 * **pyppur**: Single hidden layer with tanh activation and structured constraints
+
+Outlier Robustness
+~~~~~~~~~~~~~~~~~~
+
+A key advantage of pyppur over linear methods (PCA, MDS) is outlier robustness.
+The tanh nonlinearity bounds all outputs to :math:`[-1, 1]`, preventing extreme
+values from dominating the embedding:
+
+* **PCA/MDS**: Outliers can cause variance ratios >100x between outlier and non-outlier points
+* **pyppur**: Bounded outputs limit variance ratios to ~5x even with extreme outliers
+
+This makes pyppur particularly suitable for:
+
+1. Data with natural outliers (financial data, sensor readings)
+2. Preprocessing for neural networks (stable, bounded inputs)
+3. Robust distance-preserving embeddings

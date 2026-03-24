@@ -67,15 +67,15 @@ def test_scipy_optimizer_distance(sample_data):
 
     dist_X = squareform(pdist(X, metric="euclidean"))
 
-    # Create objective function
-    objective = DistanceObjective(alpha=1.0)
+    # Create objective function with MSE metric (loss is always >= 0)
+    objective = DistanceObjective(alpha=1.0, distance_metric="mse")
 
     # Create optimizer
     optimizer = ScipyOptimizer(
         objective_func=objective,
         n_components=n_components,
         method="L-BFGS-B",
-        max_iter=10,  # Low for testing
+        max_iter=10,
         random_state=42,
         verbose=False,
     )
@@ -141,15 +141,15 @@ def test_grid_optimizer_distance(sample_data):
 
     dist_X = squareform(pdist(X, metric="euclidean"))
 
-    # Create objective function
-    objective = DistanceObjective(alpha=1.0)
+    # Create objective function with MSE metric (loss is always >= 0)
+    objective = DistanceObjective(alpha=1.0, distance_metric="mse")
 
     # Create optimizer
     optimizer = GridOptimizer(
         objective_func=objective,
         n_components=n_components,
-        n_directions=10,  # Low for testing
-        n_iterations=2,  # Low for testing
+        n_directions=10,
+        n_iterations=2,
         random_state=42,
         verbose=False,
     )

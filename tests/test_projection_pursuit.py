@@ -39,7 +39,8 @@ def test_init() -> None:
     pp = ProjectionPursuit()
     assert pp.n_components == 2
     assert pp.objective == Objective.DISTANCE_DISTORTION
-    assert pp.alpha == 1.0
+    assert pp.alpha == 0.1
+    assert pp.distance_metric == "correlation"
 
     # Custom initialization
     pp = ProjectionPursuit(

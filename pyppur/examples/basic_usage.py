@@ -19,14 +19,15 @@ def digits_example() -> None:
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
-    # Projection pursuit with distance distortion (with nonlinearity)
-    print("Running Projection Pursuit (Distance Distortion with Nonlinearity)...")
+    # Projection pursuit with distance distortion (correlation metric - default)
+    print("Running Projection Pursuit (Distance Distortion, correlation metric)...")
     pp_dist_nl = ProjectionPursuit(
         n_components=2,
         objective=Objective.DISTANCE_DISTORTION,
-        alpha=1.5,  # Steepness of the ridge function
-        use_nonlinearity_in_distance=True,  # Apply tanh before distance computation
-        n_init=1,  # Number of random initializations
+        alpha=0.1,
+        distance_metric="correlation",
+        use_nonlinearity_in_distance=True,
+        n_init=1,
         verbose=True,
     )
 
@@ -35,17 +36,18 @@ def digits_example() -> None:
 
     # Evaluate
     metrics_dist_nl = pp_dist_nl.evaluate(X_scaled, y)
-    print("\nDistance Distortion (Nonlinear) Metrics:")
+    print("\nDistance Distortion (Correlation) Metrics:")
     for metric, value in metrics_dist_nl.items():
         print(f"  {metric}: {value:.4f}")
 
-    # Projection pursuit with distance distortion (linear)
-    print("\nRunning Projection Pursuit (Distance Distortion Linear)...")
+    # Projection pursuit with distance distortion (spearman metric)
+    print("\nRunning Projection Pursuit (Distance Distortion, spearman metric)...")
     pp_dist_linear = ProjectionPursuit(
         n_components=2,
         objective=Objective.DISTANCE_DISTORTION,
-        alpha=1.5,
-        use_nonlinearity_in_distance=False,  # Linear distance preservation
+        alpha=0.1,
+        distance_metric="spearman",
+        use_nonlinearity_in_distance=True,
         n_init=1,
         verbose=True,
     )
@@ -55,7 +57,7 @@ def digits_example() -> None:
 
     # Evaluate
     metrics_dist_linear = pp_dist_linear.evaluate(X_scaled, y)
-    print("\nDistance Distortion (Linear) Metrics:")
+    print("\nDistance Distortion (Spearman) Metrics:")
     for metric, value in metrics_dist_linear.items():
         print(f"  {metric}: {value:.4f}")
 
@@ -64,8 +66,8 @@ def digits_example() -> None:
     pp_recon_tied = ProjectionPursuit(
         n_components=2,
         objective=Objective.RECONSTRUCTION,
-        alpha=1.5,
-        tied_weights=True,  # Traditional tied-weights autoencoder
+        alpha=1.0,
+        tied_weights=True,
         n_init=1,
         verbose=True,
     )
@@ -84,9 +86,9 @@ def digits_example() -> None:
     pp_recon_free = ProjectionPursuit(
         n_components=2,
         objective=Objective.RECONSTRUCTION,
-        alpha=1.5,
-        tied_weights=False,  # Separate encoder and decoder
-        l2_reg=0.01,  # Regularize decoder weights
+        alpha=1.0,
+        tied_weights=False,
+        l2_reg=0.01,
         n_init=1,
         verbose=True,
     )
@@ -102,15 +104,15 @@ def digits_example() -> None:
 
     # Compare embeddings
     embeddings = {
-        "Dist (Nonlinear)": X_pp_dist_nl,
-        "Dist (Linear)": X_pp_dist_linear,
+        "Dist (Corr)": X_pp_dist_nl,
+        "Dist (Spearman)": X_pp_dist_linear,
         "Recon (Tied)": X_pp_recon_tied,
         "Recon (Free)": X_pp_recon_free,
     }
 
     metrics = {
-        "Dist (Nonlinear)": metrics_dist_nl,
-        "Dist (Linear)": metrics_dist_linear,
+        "Dist (Corr)": metrics_dist_nl,
+        "Dist (Spearman)": metrics_dist_linear,
         "Recon (Tied)": metrics_recon_tied,
         "Recon (Free)": metrics_recon_free,
     }

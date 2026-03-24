@@ -21,9 +21,14 @@ pip install pyppur
 - Two optimization objectives:
   - **Distance Distortion**: Preserves pairwise distances between data points
   - **Reconstruction**: Minimizes reconstruction error using ridge functions
+- Multiple distance metrics for distance preservation:
+  - **Correlation**: Scale-invariant Pearson correlation (recommended, default)
+  - **Spearman**: Rank-based correlation for monotonic preservation
+  - **MSE**: Mean squared error (scale-sensitive, original behavior)
 - Multiple initialization strategies (PCA-based and random)
 - Full scikit-learn compatible API
 - Supports standardization and custom weighting
+- **Outlier robustness**: The tanh nonlinearity bounds outputs, providing natural outlier resistance
 
 ## Usage
 
@@ -39,11 +44,12 @@ digits = load_digits()
 X = digits.data
 y = digits.target
 
-# Projection pursuit with distance distortion
+# Projection pursuit with distance distortion (correlation metric, recommended)
 pp_dist = ProjectionPursuit(
     n_components=2,
     objective=Objective.DISTANCE_DISTORTION,
-    alpha=1.5,  # Steepness of the ridge function
+    alpha=0.1,  # Lower alpha works better for distance preservation
+    distance_metric="correlation",  # Scale-invariant (default)
     n_init=3,   # Number of random initializations
     verbose=True
 )
@@ -144,6 +150,17 @@ Where:
 - **With nonlinearity**: Compares distances between original space and `g(X A^T)`
 - **Without nonlinearity**: Compares distances between original space and linear projections `X A^T`
 
+#### Distance Metrics
+- **correlation** (default): Maximizes Pearson correlation between distance matrices. Scale-invariant and recommended for most use cases.
+- **spearman**: Maximizes Spearman rank correlation. Useful when only relative ordering matters.
+- **mse**: Minimizes mean squared error between distances. Scale-sensitive, may struggle when embedded distances are bounded by tanh.
+
+#### Outlier Robustness
+The tanh nonlinearity provides natural outlier robustness by bounding all outputs to [-1, 1]. This means extreme values in the input don't dominate the embedding, making pyppur particularly useful for:
+- Data with outliers
+- Preprocessing for neural networks (bounded inputs)
+- Applications requiring stable, bounded representations
+
 ## Requirements
 
 - Python 3.10+
@@ -165,7 +182,7 @@ If you use `pyppur` in your research, please cite it as:
   author = {Gaurav Sood},
   title = {pyppur: Python Projection Pursuit Unsupervised Reduction},
   url = {https://github.com/gojiplus/pyppur},
-  version = {0.2.0},
+  version = {0.5.0},
   year = {2025},
 }
 ```
