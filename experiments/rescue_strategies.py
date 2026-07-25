@@ -10,17 +10,17 @@ Strategies:
 """
 
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
-from scipy.stats import pearsonr, spearmanr
 from scipy.optimize import minimize
-from sklearn.datasets import load_digits, make_swiss_roll, make_blobs
+from scipy.spatial.distance import pdist
+from scipy.stats import pearsonr
+from sklearn.datasets import load_digits, make_blobs, make_swiss_roll
 from sklearn.decomposition import PCA
 from sklearn.manifold import MDS
-from sklearn.preprocessing import StandardScaler
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
 
-from pyppur import ProjectionPursuit, Objective
+from pyppur import Objective, ProjectionPursuit
 
 
 def correlation_objective(a_flat, X, k, d_orig, alpha=0.01):
@@ -66,15 +66,15 @@ def sammon_objective(a_flat, X, k, d_orig, alpha=0.01):
 
     # Sammon stress
     mask = d_orig > 1e-10
-    stress = np.sum((d_orig[mask] - d_embed[mask])**2 / d_orig[mask])
+    stress = np.sum((d_orig[mask] - d_embed[mask]) ** 2 / d_orig[mask])
     return stress
 
 
 def test_alternative_objectives(X, name):
     """Test correlation and Sammon objectives."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"ALTERNATIVE OBJECTIVES TEST: {name}")
-    print("="*60)
+    print("=" * 60)
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -168,17 +168,22 @@ def test_outlier_use_case():
     Test the outlier robustness use case in a realistic scenario.
     Use case: Classification with outlier-contaminated training data.
     """
-    print(f"\n{'='*60}")
-    print(f"OUTLIER ROBUSTNESS USE CASE")
-    print("="*60)
+    print(f"\n{'=' * 60}")
+    print("OUTLIER ROBUSTNESS USE CASE")
+    print("=" * 60)
 
     # Create classification dataset
     np.random.seed(42)
     n_samples = 300
     n_features = 20
 
-    X, y = make_blobs(n_samples=n_samples, n_features=n_features,
-                      centers=3, cluster_std=2.0, random_state=42)
+    X, y = make_blobs(
+        n_samples=n_samples,
+        n_features=n_features,
+        centers=3,
+        cluster_std=2.0,
+        random_state=42,
+    )
 
     # Add outliers to training data (10%)
     n_outliers = n_samples // 10
@@ -261,7 +266,9 @@ def test_outlier_use_case():
     pca_clean.fit(X_train_clean)
     knn = KNeighborsClassifier(n_neighbors=5)
     knn.fit(pca_clean.transform(X_train_clean), y_train_c)
-    results_clean["PCA (clean)"] = knn.score(pca_clean.transform(X_test_clean), y_test_c)
+    results_clean["PCA (clean)"] = knn.score(
+        pca_clean.transform(X_test_clean), y_test_c
+    )
 
     pp_clean = ProjectionPursuit(
         n_components=2,
@@ -273,15 +280,24 @@ def test_outlier_use_case():
     pp_clean.fit(X_train_clean)
     knn = KNeighborsClassifier(n_neighbors=5)
     knn.fit(pp_clean.transform(X_train_clean), y_train_c)
-    results_clean["pyppur (clean)"] = knn.score(pp_clean.transform(X_test_clean), y_test_c)
+    results_clean["pyppur (clean)"] = knn.score(
+        pp_clean.transform(X_test_clean), y_test_c
+    )
 
     print("\nClassification accuracy WITHOUT outliers (baseline):")
     for method, acc in results_clean.items():
         print(f"  {method:25s}: {acc:.4f}")
 
     print("\nDegradation due to outliers:")
-    print(f"  PCA: {results_clean['PCA (clean)']:.4f} → {results['PCA']:.4f} (Δ={results['PCA'] - results_clean['PCA (clean)']:+.4f})")
-    print(f"  pyppur: {results_clean['pyppur (clean)']:.4f} → {results['pyppur (tanh, α=1.0)']:.4f} (Δ={results['pyppur (tanh, α=1.0)'] - results_clean['pyppur (clean)']:+.4f})")
+    print(
+        f"  PCA: {results_clean['PCA (clean)']:.4f} → {results['PCA']:.4f} "
+        f"(Δ={results['PCA'] - results_clean['PCA (clean)']:+.4f})"
+    )
+    print(
+        f"  pyppur: {results_clean['pyppur (clean)']:.4f} → "
+        f"{results['pyppur (tanh, α=1.0)']:.4f} "
+        f"(Δ={results['pyppur (tanh, α=1.0)'] - results_clean['pyppur (clean)']:+.4f})"
+    )
 
 
 def test_bounded_representation_use_case():
@@ -289,9 +305,9 @@ def test_bounded_representation_use_case():
     Test use case where bounded representations are desirable.
     Example: Features for neural network input (want bounded activations).
     """
-    print(f"\n{'='*60}")
-    print(f"BOUNDED REPRESENTATION USE CASE")
-    print("="*60)
+    print(f"\n{'=' * 60}")
+    print("BOUNDED REPRESENTATION USE CASE")
+    print("=" * 60)
 
     # Load data
     digits = load_digits()
@@ -320,8 +336,14 @@ def test_bounded_representation_use_case():
     X_test_pp = pp.transform(X_test)
 
     print("\nEmbedding statistics:")
-    print(f"  PCA - range: [{X_train_pca.min():.2f}, {X_train_pca.max():.2f}], std: {X_train_pca.std():.2f}")
-    print(f"  pyppur - range: [{X_train_pp.min():.2f}, {X_train_pp.max():.2f}], std: {X_train_pp.std():.2f}")
+    print(
+        f"  PCA - range: [{X_train_pca.min():.2f}, {X_train_pca.max():.2f}], "
+        f"std: {X_train_pca.std():.2f}"
+    )
+    print(
+        f"  pyppur - range: [{X_train_pp.min():.2f}, {X_train_pp.max():.2f}], "
+        f"std: {X_train_pp.std():.2f}"
+    )
 
     # Classification performance
     from sklearn.linear_model import LogisticRegression
@@ -332,16 +354,16 @@ def test_bounded_representation_use_case():
     lr_pp = LogisticRegression(max_iter=1000, random_state=42)
     lr_pp.fit(X_train_pp, y_train)
 
-    print(f"\nLogistic regression accuracy:")
+    print("\nLogistic regression accuracy:")
     print(f"  PCA: {lr_pca.score(X_test_pca, y_test):.4f}")
     print(f"  pyppur: {lr_pp.score(X_test_pp, y_test):.4f}")
 
 
 def propose_fixes():
     """Summarize proposed fixes for pyppur."""
-    print("\n" + "="*60)
+    print("\n" + "=" * 60)
     print("PROPOSED FIXES FOR PYPPUR")
-    print("="*60)
+    print("=" * 60)
     print("""
 Based on our investigation, here are concrete fixes:
 
@@ -381,9 +403,9 @@ def main():
 
     X_swiss, _ = make_swiss_roll(n_samples=300, noise=0.5, random_state=42)
 
-    print("\n" + "#"*60)
+    print("\n" + "#" * 60)
     print("# PYPPUR RESCUE STRATEGIES")
-    print("#"*60)
+    print("#" * 60)
 
     # Test alternative objectives
     test_alternative_objectives(X_digits, "Digits")

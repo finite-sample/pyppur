@@ -15,35 +15,40 @@ Potential rescues:
 """
 
 import numpy as np
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import pdist
 from scipy.stats import pearsonr, spearmanr
-from sklearn.datasets import load_digits, make_swiss_roll, make_blobs
+from sklearn.datasets import load_digits, make_blobs, make_swiss_roll
 from sklearn.decomposition import PCA
 from sklearn.manifold import MDS
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
 
-from pyppur import ProjectionPursuit, Objective
+from pyppur import Objective, ProjectionPursuit
 
 
 def diagnose_scale_mismatch(X, name):
     """Diagnose if scale mismatch is the problem."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"SCALE MISMATCH DIAGNOSIS: {name}")
-    print("="*60)
+    print("=" * 60)
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
 
     # Original distances
     d_orig = pdist(X_scaled, metric="euclidean")
-    print(f"Original distances: min={d_orig.min():.2f}, max={d_orig.max():.2f}, mean={d_orig.mean():.2f}")
+    print(
+        f"Original distances: min={d_orig.min():.2f}, "
+        f"max={d_orig.max():.2f}, mean={d_orig.mean():.2f}"
+    )
 
     # PCA embedding distances
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(X_scaled)
     d_pca = pdist(X_pca, metric="euclidean")
-    print(f"PCA distances: min={d_pca.min():.2f}, max={d_pca.max():.2f}, mean={d_pca.mean():.2f}")
+    print(
+        f"PCA distances: min={d_pca.min():.2f}, "
+        f"max={d_pca.max():.2f}, mean={d_pca.mean():.2f}"
+    )
 
     # pyppur with tanh - what are the embedded distances?
     pp = ProjectionPursuit(
@@ -55,15 +60,19 @@ def diagnose_scale_mismatch(X, name):
     )
     X_pp = pp.fit_transform(X_scaled)
     d_pp = pdist(X_pp, metric="euclidean")
-    print(f"pyppur (tanh) distances: min={d_pp.min():.2f}, max={d_pp.max():.2f}, mean={d_pp.mean():.2f}")
+    print(
+        f"pyppur (tanh) distances: min={d_pp.min():.2f}, "
+        f"max={d_pp.max():.2f}, mean={d_pp.mean():.2f}"
+    )
 
-    # The theoretical max distance with tanh is 2*sqrt(k) since each dim bounded in [-1,1]
+    # The theoretical max distance with tanh is 2*sqrt(k), since each dim is
+    # bounded in [-1,1]
     k = 2
     theoretical_max = 2 * np.sqrt(k)
     print(f"Theoretical max with tanh (k={k}): {theoretical_max:.2f}")
 
     # Compute scale ratio
-    scale_ratio = d_orig.max() / d_pp.max() if d_pp.max() > 0 else float('inf')
+    scale_ratio = d_orig.max() / d_pp.max() if d_pp.max() > 0 else float("inf")
     print(f"Scale ratio (orig/pp): {scale_ratio:.2f}x")
 
     return {
@@ -75,9 +84,9 @@ def diagnose_scale_mismatch(X, name):
 
 def test_scaled_objective(X, name):
     """Test if scaling the embedded distances helps."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"SCALED DISTANCE TEST: {name}")
-    print("="*60)
+    print("=" * 60)
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -124,9 +133,9 @@ def test_scaled_objective(X, name):
 
 def test_alpha_sensitivity(X, name):
     """Test how alpha affects performance."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"ALPHA SENSITIVITY: {name}")
-    print("="*60)
+    print("=" * 60)
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -155,7 +164,10 @@ def test_alpha_sensitivity(X, name):
             "spearman": rank_corr,
             "loss": pp.best_loss_,
         })
-        print(f"  alpha={alpha:5.2f}: Pearson={corr:.4f}, Spearman={rank_corr:.4f}, loss={pp.best_loss_:.4f}")
+        print(
+            f"  alpha={alpha:5.2f}: Pearson={corr:.4f}, "
+            f"Spearman={rank_corr:.4f}, loss={pp.best_loss_:.4f}"
+        )
 
     # Also test alpha very close to 0 (almost linear)
     pp_linear = ProjectionPursuit(
@@ -169,16 +181,19 @@ def test_alpha_sensitivity(X, name):
     d_pp_linear = pdist(X_pp_linear, metric="euclidean")
     corr_linear, _ = pearsonr(d_orig, d_pp_linear)
     rank_corr_linear, _ = spearmanr(d_orig, d_pp_linear)
-    print(f"  Linear (no tanh): Pearson={corr_linear:.4f}, Spearman={rank_corr_linear:.4f}")
+    print(
+        f"  Linear (no tanh): Pearson={corr_linear:.4f}, "
+        f"Spearman={rank_corr_linear:.4f}"
+    )
 
     return results
 
 
 def test_optimization_quality(X, name):
     """Check if optimization is converging properly."""
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"OPTIMIZATION QUALITY: {name}")
-    print("="*60)
+    print("=" * 60)
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -194,14 +209,17 @@ def test_optimization_quality(X, name):
             max_iter=1000,
         )
         pp.fit(X_scaled)
-        print(f"  n_init={n_init:2d}: best_loss={pp.best_loss_:.6f}, fit_time={pp.fit_time_:.2f}s")
+        print(
+            f"  n_init={n_init:2d}: best_loss={pp.best_loss_:.6f}, "
+            f"fit_time={pp.fit_time_:.2f}s"
+        )
 
 
 def test_outlier_robustness(n_samples=200):
     """Test if tanh helps with outlier robustness."""
-    print(f"\n{'='*60}")
-    print(f"OUTLIER ROBUSTNESS TEST")
-    print("="*60)
+    print(f"\n{'=' * 60}")
+    print("OUTLIER ROBUSTNESS TEST")
+    print("=" * 60)
 
     # Create data with outliers
     np.random.seed(42)
@@ -217,8 +235,6 @@ def test_outlier_robustness(n_samples=200):
     X_scaled = scaler.fit_transform(X_outliers)
 
     # Test methods
-    results = {}
-
     # PCA
     pca = PCA(n_components=2)
     X_pca = pca.fit_transform(X_scaled)
@@ -261,19 +277,20 @@ def test_outlier_robustness(n_samples=200):
     for name, X_embed in methods.items():
         outlier_var = np.var(X_embed[outlier_indices])
         non_outlier_var = np.var(X_embed[non_outlier_mask])
-        ratio = outlier_var / non_outlier_var if non_outlier_var > 0 else float('inf')
+        ratio = outlier_var / non_outlier_var if non_outlier_var > 0 else float("inf")
         print(f"  {name:20s}: {ratio:.4f}")
 
 
 def test_cluster_separation():
     """Test if pyppur preserves cluster structure."""
-    print(f"\n{'='*60}")
-    print(f"CLUSTER SEPARATION TEST")
-    print("="*60)
+    print(f"\n{'=' * 60}")
+    print("CLUSTER SEPARATION TEST")
+    print("=" * 60)
 
     # Create well-separated clusters in high-D
-    X, y = make_blobs(n_samples=300, n_features=50, centers=5,
-                      cluster_std=1.0, random_state=42)
+    X, y = make_blobs(
+        n_samples=300, n_features=50, centers=5, cluster_std=1.0, random_state=42
+    )
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -303,6 +320,7 @@ def test_cluster_separation():
 
     # Compute silhouette scores
     from sklearn.metrics import silhouette_score
+
     print("\nSilhouette scores (higher = better cluster separation):")
     for name, X_embed in methods.items():
         score = silhouette_score(X_embed, y)
@@ -317,9 +335,9 @@ def test_sammon_style_objective(X, name):
     Sammon mapping uses: sum((d_X - d_Z)^2 / d_X) instead of sum((d_X - d_Z)^2)
     This naturally handles scale.
     """
-    print(f"\n{'='*60}")
+    print(f"\n{'=' * 60}")
     print(f"SAMMON-STYLE ANALYSIS: {name}")
-    print("="*60)
+    print("=" * 60)
 
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X)
@@ -345,20 +363,22 @@ def test_sammon_style_objective(X, name):
     def sammon_stress(d_orig, d_embed):
         # Avoid division by zero
         mask = d_orig > 1e-10
-        return np.sum((d_orig[mask] - d_embed[mask])**2 / d_orig[mask]) / np.sum(d_orig[mask])
+        return np.sum((d_orig[mask] - d_embed[mask]) ** 2 / d_orig[mask]) / np.sum(
+            d_orig[mask]
+        )
 
     def raw_stress(d_orig, d_embed):
-        return np.mean((d_orig - d_embed)**2)
+        return np.mean((d_orig - d_embed) ** 2)
 
-    print(f"Raw stress (pyppur objective):")
+    print("Raw stress (pyppur objective):")
     print(f"  MDS: {raw_stress(d_orig, d_mds):.4f}")
     print(f"  pyppur: {raw_stress(d_orig, d_pp):.4f}")
 
-    print(f"\nSammon stress (normalized by distance):")
+    print("\nSammon stress (normalized by distance):")
     print(f"  MDS: {sammon_stress(d_orig, d_mds):.6f}")
     print(f"  pyppur: {sammon_stress(d_orig, d_pp):.6f}")
 
-    print(f"\nCorrelation:")
+    print("\nCorrelation:")
     print(f"  MDS: {pearsonr(d_orig, d_mds)[0]:.4f}")
     print(f"  pyppur: {pearsonr(d_orig, d_pp)[0]:.4f}")
 
@@ -372,58 +392,58 @@ def main():
 
     X_blobs, _ = make_blobs(n_samples=200, n_features=20, centers=4, random_state=42)
 
-    print("\n" + "#"*60)
+    print("\n" + "#" * 60)
     print("# DEEP INVESTIGATION INTO PYPPUR FAILURE MODES")
-    print("#"*60)
+    print("#" * 60)
 
     # 1. Scale mismatch diagnosis
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 1: SCALE MISMATCH DIAGNOSIS")
-    print("="*60)
+    print("=" * 60)
     diagnose_scale_mismatch(X_digits, "Digits")
     diagnose_scale_mismatch(X_swiss, "Swiss Roll")
 
     # 2. Test if scaling fixes things
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 2: DOES SCALING FIX THE PROBLEM?")
-    print("="*60)
+    print("=" * 60)
     test_scaled_objective(X_digits, "Digits")
     test_scaled_objective(X_swiss, "Swiss Roll")
 
     # 3. Alpha sensitivity
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 3: ALPHA SENSITIVITY")
-    print("="*60)
+    print("=" * 60)
     test_alpha_sensitivity(X_digits, "Digits")
 
     # 4. Optimization quality
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 4: OPTIMIZATION CONVERGENCE")
-    print("="*60)
+    print("=" * 60)
     test_optimization_quality(X_digits, "Digits")
 
     # 5. Outlier robustness - potential niche
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 5: OUTLIER ROBUSTNESS (POTENTIAL NICHE)")
-    print("="*60)
+    print("=" * 60)
     test_outlier_robustness()
 
     # 6. Cluster separation
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 6: CLUSTER SEPARATION")
-    print("="*60)
+    print("=" * 60)
     test_cluster_separation()
 
     # 7. Sammon-style analysis
-    print("\n\n" + "="*60)
+    print("\n\n" + "=" * 60)
     print("PART 7: SAMMON-STYLE OBJECTIVE ANALYSIS")
-    print("="*60)
+    print("=" * 60)
     test_sammon_style_objective(X_digits, "Digits")
 
     # Summary
-    print("\n\n" + "#"*60)
+    print("\n\n" + "#" * 60)
     print("# INVESTIGATION SUMMARY")
-    print("#"*60)
+    print("#" * 60)
     print("""
 Key findings to analyze:
 1. Scale mismatch: Check if embedded distances are much smaller than original
