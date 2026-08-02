@@ -9,6 +9,7 @@ from typing import Any
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from sklearn.decomposition import PCA
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import StandardScaler
 
 from pyppur.objectives import Objective
@@ -24,7 +25,7 @@ from pyppur.utils.metrics import (
 from pyppur.utils.preprocessing import standardize_data
 
 
-class ProjectionPursuit:
+class ProjectionPursuit(TransformerMixin, BaseEstimator):
     """Implementation of Projection Pursuit for dimensionality reduction.
 
     This class provides methods to find optimal projections by minimizing
@@ -109,7 +110,7 @@ class ProjectionPursuit:
         self._optimizer_info: dict[str, Any] = {}
         self._n_components_fitted: int | None = None
 
-    def fit(self, X: np.ndarray) -> "ProjectionPursuit":
+    def fit(self, X: np.ndarray, y: Any = None) -> "ProjectionPursuit":
         """Fit the ProjectionPursuit model to the data.
 
         Args:
@@ -346,7 +347,7 @@ class ProjectionPursuit:
 
         return Z_transformed
 
-    def fit_transform(self, X: np.ndarray) -> np.ndarray:
+    def fit_transform(self, X: np.ndarray, y: Any = None, **fit_params: Any) -> np.ndarray:
         """Fit the model with X and apply dimensionality reduction on X.
 
         Args:
@@ -355,7 +356,7 @@ class ProjectionPursuit:
         Returns:
             Transformed data, shape (n_samples, n_components).
         """
-        self.fit(X)
+        self.fit(X, y)
         return self.transform(X)
 
     def reconstruct(self, X: np.ndarray) -> np.ndarray:
