@@ -26,8 +26,8 @@ pip install pyppur
   - **Spearman**: Rank-based correlation for monotonic preservation
   - **MSE**: Mean squared error (scale-sensitive, original behavior)
 - Multiple initialization strategies (PCA-based and random)
-- Familiar `fit` / `transform` / `fit_transform` API (see the note under
-  [API Reference](#api-reference) on scikit-learn interoperability)
+- A scikit-learn transformer: usable in `Pipeline`, `GridSearchCV` and
+  `cross_val_score` (see [scikit-learn interoperability](#scikit-learn-interoperability))
 - Supports standardization and custom weighting
 - **Outlier robustness**: The tanh nonlinearity bounds outputs, providing natural outlier resistance
 
@@ -120,11 +120,21 @@ The main class in `pyppur` is `ProjectionPursuit`, which provides the following 
 
 ### scikit-learn interoperability
 
-`ProjectionPursuit` follows scikit-learn's `fit`/`transform` naming, but it is not a
-drop-in scikit-learn estimator: it does not subclass `BaseEstimator`/`TransformerMixin`,
-provides no `get_params`/`set_params`, and `fit`/`fit_transform` take no `y`, so it
-cannot be dropped into a `Pipeline` or passed to `clone`, `GridSearchCV`, or
-`cross_val_score`. Use it directly on arrays.
+`ProjectionPursuit` subclasses `TransformerMixin` and `BaseEstimator`, so it works
+wherever a scikit-learn transformer does:
+
+```python
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
+
+pipe = Pipeline([("pp", ProjectionPursuit(n_components=2)), ("lr", LogisticRegression())])
+GridSearchCV(pipe, {"pp__alpha": [0.1, 0.5]}, cv=3).fit(X, y)
+```
+
+It passes scikit-learn's own `check_estimator` suite in full, which
+`tests/test_sklearn_compat.py` asserts so it cannot regress. `fit` accepts and
+ignores `y`, and sets the conventional `n_features_in_` and `n_iter_`.
 
 ## Theory
 

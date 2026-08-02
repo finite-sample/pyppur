@@ -8,9 +8,10 @@ from typing import Any
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
-from sklearn.decomposition import PCA
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 from pyppur.objectives import Objective
 from pyppur.objectives.base import BaseObjective
@@ -36,7 +37,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
     def __init__(
         self,
         n_components: int = 2,
-        objective: Objective = Objective.DISTANCE_DISTORTION,
+        objective: Objective | str = Objective.DISTANCE_DISTORTION.value,
         alpha: float = 0.1,
         max_iter: int = 500,
         tol: float = 1e-6,
@@ -121,10 +122,9 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         """
         start_time = time.time()
 
-        # Check input
-        X = np.asarray(X)
-        if X.ndim != 2:
-            raise ValueError(f"Expected 2D array, got {X.ndim}D array instead")
+        # Records n_features_in_, rejects NaN/inf and sparse input, and raises
+        # the messages scikit-learn's estimator checks look for.
+        X = validate_data(self, X, reset=True, dtype=np.float64, ensure_min_samples=2)
 
         n_samples, n_features = X.shape
 
@@ -296,6 +296,8 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
             self._decoder_weights = None
 
         self._fitted = True
+        # scikit-learn convention: iteration count of the selected fit.
+        self.n_iter_ = int(self._optimizer_info.get("nit", 0))
         self._fit_time = time.time() - start_time
 
         return self
@@ -309,16 +311,8 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         Returns:
             Transformed data, shape (n_samples, n_components).
         """
-        if not self._fitted:
-            raise ValueError(
-                "This ProjectionPursuit instance is not fitted yet. "
-                "Call 'fit' before using this method."
-            )
-
-        # Check input
-        X = np.asarray(X)
-        if X.ndim != 2:
-            raise ValueError(f"Expected 2D array, got {X.ndim}D array instead")
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False, dtype=np.float64)
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
@@ -347,7 +341,9 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
         return Z_transformed
 
-    def fit_transform(self, X: np.ndarray, y: Any = None, **fit_params: Any) -> np.ndarray:
+    def fit_transform(
+        self, X: np.ndarray, y: Any = None, **fit_params: Any
+    ) -> np.ndarray:
         """Fit the model with X and apply dimensionality reduction on X.
 
         Args:
