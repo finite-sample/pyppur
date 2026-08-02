@@ -8,8 +8,10 @@ from typing import Any
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils.validation import check_is_fitted, validate_data
 
 from pyppur.objectives import Objective
 from pyppur.objectives.base import BaseObjective
@@ -24,7 +26,7 @@ from pyppur.utils.metrics import (
 from pyppur.utils.preprocessing import standardize_data
 
 
-class ProjectionPursuit:
+class ProjectionPursuit(TransformerMixin, BaseEstimator):
     """Implementation of Projection Pursuit for dimensionality reduction.
 
     This class provides methods to find optimal projections by minimizing
@@ -35,7 +37,7 @@ class ProjectionPursuit:
     def __init__(
         self,
         n_components: int = 2,
-        objective: Objective = Objective.DISTANCE_DISTORTION,
+        objective: Objective | str = Objective.DISTANCE_DISTORTION.value,
         alpha: float = 0.1,
         max_iter: int = 500,
         tol: float = 1e-6,
@@ -107,12 +109,9 @@ class ProjectionPursuit:
         self._fit_time = 0.0
         self._objective_func: BaseObjective | None = None
         self._optimizer_info: dict[str, Any] = {}
+        self._n_components_fitted: int | None = None
 
-        # Set random seed if provided
-        if random_state is not None:
-            np.random.seed(random_state)
-
-    def fit(self, X: np.ndarray) -> "ProjectionPursuit":
+    def fit(self, X: np.ndarray, y: Any = None) -> "ProjectionPursuit":
         """Fit the ProjectionPursuit model to the data.
 
         Args:
@@ -123,19 +122,30 @@ class ProjectionPursuit:
         """
         start_time = time.time()
 
-        # Check input
-        X = np.asarray(X)
-        if X.ndim != 2:
-            raise ValueError(f"Expected 2D array, got {X.ndim}D array instead")
+        # Records n_features_in_, rejects NaN/inf and sparse input, and raises
+        # the messages scikit-learn's estimator checks look for.
+        X = validate_data(self, X, reset=True, dtype=np.float64, ensure_min_samples=2)
 
         n_samples, n_features = X.shape
 
-        if self.n_components > n_features:
+        # The constructor argument is never mutated; the effective value used by this
+        # fit is exposed as the fitted attribute n_components_.
+        n_components = self.n_components
+        if n_components > n_features:
             warnings.warn(
-                f"n_components={self.n_components} must be <= n_features={n_features}. "
-                f"Setting n_components={n_features}"
+                f"n_components={n_components} must be <= n_features={n_features}. "
+                f"Using n_components={n_features} for this fit"
             )
-            self.n_components = n_features
+            n_components = n_features
+        self._n_components_fitted = n_components
+
+        # A fit must not depend on, or perturb, previous fits.
+        self._loss_curve = []
+        self._optimizer_info = {}
+
+        # Draw initializations from a local RNG so the global NumPy stream is
+        # left untouched.
+        rng = np.random.RandomState(self.random_state)
 
         # Scale data if requested
         if self.center or self.scale:
@@ -184,20 +194,20 @@ class ProjectionPursuit:
         if self.verbose:
             print("Trying PCA initialization...")
 
-        pca = PCA(n_components=self.n_components)
+        pca = PCA(n_components=n_components)
         _ = pca.fit_transform(X_scaled)
         a0_pca = pca.components_  # Use PCA directions as starting point
 
         # For untied weights, initialize decoder as well
         if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
             # Initialize decoder with small random values
-            b0_pca = np.random.randn(self.n_components, n_features) * 0.1
+            b0_pca = rng.randn(n_components, n_features) * 0.1
             a0_pca = np.concatenate([a0_pca.flatten(), b0_pca.flatten()])
 
         # Create optimizer
         optimizer = ScipyOptimizer(
             objective_func=self._objective_func,
-            n_components=self.n_components,
+            n_components=n_components,
             method=self.optimizer,
             max_iter=self.max_iter,
             tol=self.tol,
@@ -224,10 +234,10 @@ class ProjectionPursuit:
             if self.verbose:
                 print(f"Random initialization {i + 1}/{self.n_init}...")
 
-            np.random.seed(
+            init_rng = np.random.RandomState(
                 self.random_state + i if self.random_state is not None else None
             )
-            a0_random = np.random.randn(self.n_components, n_features)
+            a0_random = init_rng.randn(n_components, n_features)
 
             # Normalize each direction
             norms = np.linalg.norm(a0_random, axis=1, keepdims=True)
@@ -235,7 +245,7 @@ class ProjectionPursuit:
 
             # For untied weights, initialize decoder as well
             if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
-                b0_random = np.random.randn(self.n_components, n_features) * 0.1
+                b0_random = init_rng.randn(n_components, n_features) * 0.1
                 a0_random = np.concatenate([a0_random.flatten(), b0_random.flatten()])
 
             # Run optimization with random initialization
@@ -264,18 +274,18 @@ class ProjectionPursuit:
         if best_a is not None:
             if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
                 # For untied weights, best_a contains both encoder and decoder
-                n_encoder_params = self.n_components * n_features
+                n_encoder_params = n_components * n_features
                 self._x_loadings = best_a[:n_encoder_params].reshape(
-                    self.n_components, n_features
+                    n_components, n_features
                 )
                 self._decoder_weights = best_a[n_encoder_params:].reshape(
-                    self.n_components, n_features
+                    n_components, n_features
                 )
             else:
                 # For tied weights or distance distortion, just encoder
                 if isinstance(best_a, np.ndarray) and best_a.ndim == 1:
-                    self._x_loadings = best_a[: self.n_components * n_features].reshape(
-                        self.n_components, n_features
+                    self._x_loadings = best_a[: n_components * n_features].reshape(
+                        n_components, n_features
                     )
                 else:
                     self._x_loadings = best_a
@@ -286,6 +296,8 @@ class ProjectionPursuit:
             self._decoder_weights = None
 
         self._fitted = True
+        # scikit-learn convention: iteration count of the selected fit.
+        self.n_iter_ = int(self._optimizer_info.get("nit", 0))
         self._fit_time = time.time() - start_time
 
         return self
@@ -299,16 +311,8 @@ class ProjectionPursuit:
         Returns:
             Transformed data, shape (n_samples, n_components).
         """
-        if not self._fitted:
-            raise ValueError(
-                "This ProjectionPursuit instance is not fitted yet. "
-                "Call 'fit' before using this method."
-            )
-
-        # Check input
-        X = np.asarray(X)
-        if X.ndim != 2:
-            raise ValueError(f"Expected 2D array, got {X.ndim}D array instead")
+        check_is_fitted(self)
+        X = validate_data(self, X, reset=False, dtype=np.float64)
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
@@ -325,13 +329,21 @@ class ProjectionPursuit:
         )
         Z = X_scaled @ x_loadings_normalized.T
 
-        # Apply ridge function
+        # Apply the ridge function only if the fitted objective used it. A
+        # DistanceObjective built with use_nonlinearity=False was optimized on the
+        # linear projection, so applying tanh here would return an embedding the
+        # model was never fitted to.
         assert self._objective_func is not None
-        Z_transformed = self._objective_func.g(Z, self.alpha)
+        if getattr(self._objective_func, "use_nonlinearity", True):
+            Z_transformed = self._objective_func.g(Z, self.alpha)
+        else:
+            Z_transformed = Z
 
         return Z_transformed
 
-    def fit_transform(self, X: np.ndarray) -> np.ndarray:
+    def fit_transform(
+        self, X: np.ndarray, y: Any = None, **fit_params: Any
+    ) -> np.ndarray:
         """Fit the model with X and apply dimensionality reduction on X.
 
         Args:
@@ -340,7 +352,7 @@ class ProjectionPursuit:
         Returns:
             Transformed data, shape (n_samples, n_components).
         """
-        self.fit(X)
+        self.fit(X, y)
         return self.transform(X)
 
     def reconstruct(self, X: np.ndarray) -> np.ndarray:
@@ -383,10 +395,12 @@ class ProjectionPursuit:
                 X_scaled, x_loadings_normalized, self._decoder_weights
             )
         else:
-            # For distance distortion, manually reconstruct
+            # For distance distortion, manually reconstruct from the same
+            # embedding transform() returns.
             Z = X_scaled @ x_loadings_normalized.T
-            G = self._objective_func.g(Z, self.alpha)
-            X_hat = G @ x_loadings_normalized
+            if getattr(self._objective_func, "use_nonlinearity", True):
+                Z = self._objective_func.g(Z, self.alpha)
+            X_hat = Z @ x_loadings_normalized
 
         # Inverse transform if scaling was applied
         if self._scaler is not None:
@@ -581,6 +595,25 @@ class ProjectionPursuit:
             metrics["silhouette"] = compute_silhouette(Z, labels)
 
         return metrics
+
+    @property
+    def n_components_(self) -> int:
+        """Get the number of components actually used by the fit.
+
+        This equals the ``n_components`` constructor argument, except when that
+        exceeded the number of features, in which case it is the number of
+        features. The constructor argument itself is never modified.
+
+        Returns:
+            Number of projection directions found.
+        """
+        if not self._fitted:
+            raise ValueError(
+                "This ProjectionPursuit instance is not fitted yet. "
+                "Call 'fit' before using this method."
+            )
+        assert self._n_components_fitted is not None
+        return self._n_components_fitted
 
     @property
     def x_loadings_(self) -> np.ndarray:

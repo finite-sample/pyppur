@@ -96,6 +96,77 @@ def test_nonlinearity_in_distance(simple_data):
     assert dist_linear >= 0
 
 
+def _normalized_loadings(pp):
+    """Unit-norm encoder directions of a fitted model.
+
+    Args:
+        pp: A fitted ProjectionPursuit.
+
+    Returns:
+        Encoder directions scaled to unit norm.
+    """
+    a = pp.x_loadings_
+    return a / np.linalg.norm(a, axis=1, keepdims=True)
+
+
+def test_transform_matches_fitted_objective_when_linear():
+    """transform() must return the embedding the model was actually fitted on.
+
+    With use_nonlinearity_in_distance=False the objective is evaluated on the
+    linear projection X @ A.T, so transform() must not apply tanh: the reported
+    best_loss_ has to be reproducible from the returned embedding.
+    """
+    from scipy.spatial.distance import pdist, squareform
+
+    rng = np.random.RandomState(0)
+    X = rng.randn(60, 6)
+
+    pp = ProjectionPursuit(
+        n_components=2,
+        objective=Objective.DISTANCE_DISTORTION,
+        distance_metric="mse",
+        use_nonlinearity_in_distance=False,
+        alpha=0.5,
+        n_init=1,
+        random_state=42,
+    )
+    Z = pp.fit_transform(X)
+
+    X_scaled = pp._scaler.transform(X)
+    Z_linear = X_scaled @ _normalized_loadings(pp).T
+    np.testing.assert_allclose(Z, Z_linear)
+
+    # The objective recomputed from the returned embedding equals best_loss_.
+    dist_x = squareform(pdist(X_scaled, metric="euclidean"))
+    dist_z = squareform(pdist(Z, metric="euclidean"))
+    assert np.isclose(np.mean((dist_x - dist_z) ** 2), pp.best_loss_)
+
+    # The two public distortion numbers describe the same embedding.
+    assert np.isclose(pp.distance_distortion(X), pp.evaluate(X)["distance_distortion"])
+
+
+def test_transform_applies_nonlinearity_when_requested():
+    """With the nonlinearity enabled, transform() still applies tanh."""
+    rng = np.random.RandomState(0)
+    X = rng.randn(60, 6)
+
+    pp = ProjectionPursuit(
+        n_components=2,
+        objective=Objective.DISTANCE_DISTORTION,
+        distance_metric="mse",
+        use_nonlinearity_in_distance=True,
+        alpha=0.5,
+        n_init=1,
+        random_state=42,
+    )
+    Z = pp.fit_transform(X)
+
+    X_scaled = pp._scaler.transform(X)
+    Z_linear = X_scaled @ _normalized_loadings(pp).T
+    np.testing.assert_allclose(Z, np.tanh(pp.alpha * Z_linear))
+    assert np.isclose(pp.distance_distortion(X), pp.evaluate(X)["distance_distortion"])
+
+
 def test_l2_regularization():
     """Test that L2 regularization affects the decoder weights."""
     np.random.seed(42)
@@ -179,7 +250,12 @@ def test_parameter_validation():
         user_warnings = [warning for warning in w if warning.category is UserWarning]
         assert len(user_warnings) >= 1
         assert "n_components" in str(user_warnings[0].message)
-    assert pp.n_components == 5  # Should be adjusted to n_features
+    # The constructor argument is a hyperparameter and must survive fitting;
+    # the value actually used is reported as the fitted attribute.
+    assert pp.n_components == 10
+    assert pp.n_components_ == 5
+    assert pp.x_loadings_.shape == (5, 5)
+    assert pp.transform(X).shape == (20, 5)
 
 
 def test_decoder_weights_property():

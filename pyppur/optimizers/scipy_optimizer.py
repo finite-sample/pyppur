@@ -111,7 +111,7 @@ class ScipyOptimizer(BaseOptimizer):
         if initial_guess is None:
             if self.verbose:
                 print("No initial guess provided, using random initialization")
-            initial_guess_matrix = np.random.randn(self.n_components, n_features)
+            initial_guess_matrix = self.rng.randn(self.n_components, n_features)
             initial_guess_matrix = initial_guess_matrix / np.linalg.norm(
                 initial_guess_matrix, axis=1, keepdims=True
             )
@@ -119,7 +119,7 @@ class ScipyOptimizer(BaseOptimizer):
 
             # Add decoder for untied weights
             if is_untied:
-                decoder_guess = np.random.randn(self.n_components, n_features) * 0.1
+                decoder_guess = self.rng.randn(self.n_components, n_features) * 0.1
                 initial_guess_flat = np.concatenate([
                     initial_guess_flat,
                     decoder_guess.flatten(),
@@ -133,7 +133,7 @@ class ScipyOptimizer(BaseOptimizer):
                 # Only encoder provided, add decoder for untied weights
                 initial_guess_flat = initial_guess.flatten()
                 if is_untied:
-                    decoder_guess = np.random.randn(self.n_components, n_features) * 0.1
+                    decoder_guess = self.rng.randn(self.n_components, n_features) * 0.1
                     initial_guess_flat = np.concatenate([
                         initial_guess_flat,
                         decoder_guess.flatten(),

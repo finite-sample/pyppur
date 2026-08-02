@@ -22,7 +22,9 @@ Features
   * **Reconstruction**: Minimizes reconstruction error using ridge functions (tied or untied weights)
 
 * **Multiple initialization strategies** (PCA-based and random)
-* **Full scikit-learn compatible API**
+* **A scikit-learn transformer**: subclasses ``TransformerMixin`` /
+  ``BaseEstimator``, passes ``check_estimator`` in full, and works in
+  ``Pipeline``, ``GridSearchCV`` and ``cross_val_score``
 * **Supports standardization and custom weighting**
 * **Mathematical flexibility** with configurable ridge functions and regularization
 

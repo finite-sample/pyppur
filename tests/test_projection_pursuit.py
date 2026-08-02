@@ -202,4 +202,6 @@ def test_error_handling() -> None:
     pp = ProjectionPursuit(n_components=5)
     with pytest.warns(UserWarning):
         pp.fit(X)
-    assert pp.n_components == 3  # Should be adjusted
+    # The hyperparameter is left alone; the effective value is a fitted attribute.
+    assert pp.n_components == 5
+    assert pp.n_components_ == 3
