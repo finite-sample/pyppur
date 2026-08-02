@@ -67,7 +67,7 @@ class GridOptimizer(BaseOptimizer):
         Returns:
             Random directions, shape (n_directions, n_features).
         """
-        directions = np.random.randn(n_directions, n_features)
+        directions = self.rng.randn(n_directions, n_features)
         directions = directions / np.linalg.norm(directions, axis=1, keepdims=True)
         return directions
 
@@ -165,7 +165,7 @@ class GridOptimizer(BaseOptimizer):
                     scale = 1.0 / (iteration + 1)
 
                     # Generate perturbations around the best direction
-                    directions = np.random.randn(self.n_directions, n_features) * scale
+                    directions = self.rng.randn(self.n_directions, n_features) * scale
                     directions = directions + best_direction
                     directions = directions / np.linalg.norm(
                         directions, axis=1, keepdims=True

@@ -22,7 +22,9 @@ Features
   * **Reconstruction**: Minimizes reconstruction error using ridge functions (tied or untied weights)
 
 * **Multiple initialization strategies** (PCA-based and random)
-* **Full scikit-learn compatible API**
+* **Familiar** ``fit`` / ``transform`` / ``fit_transform`` **API** (not a drop-in
+  scikit-learn estimator: no ``BaseEstimator`` base class, no ``get_params`` /
+  ``set_params``, and not usable as a ``Pipeline`` step)
 * **Supports standardization and custom weighting**
 * **Mathematical flexibility** with configurable ridge functions and regularization
 

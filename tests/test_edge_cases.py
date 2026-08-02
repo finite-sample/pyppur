@@ -209,6 +209,49 @@ def test_evaluation_metrics_edge_cases():
     assert -1.0 <= silhouette <= 1.0
 
 
+def test_does_not_touch_global_random_state():
+    """Constructing or fitting must not reseed the caller's global NumPy RNG."""
+    X = np.random.RandomState(0).randn(20, 4)
+
+    np.random.seed(123)
+    expected = np.random.rand(3)
+
+    np.random.seed(123)
+    ProjectionPursuit(random_state=7, max_iter=5, n_init=1)
+    after_construction = np.random.rand(3)
+    np.testing.assert_array_equal(after_construction, expected)
+
+    np.random.seed(123)
+    ProjectionPursuit(random_state=7, max_iter=5, n_init=1).fit(X)
+    after_fit = np.random.rand(3)
+    np.testing.assert_array_equal(after_fit, expected)
+
+
+def test_loss_curve_is_reset_on_refit():
+    """Refitting starts a fresh loss curve rather than appending to the old one."""
+    X = np.random.RandomState(0).randn(40, 5)
+
+    pp = ProjectionPursuit(n_components=2, n_init=2, max_iter=5, random_state=1)
+    pp.fit(X)
+    first = list(pp.loss_curve_)
+    assert len(first) > 0
+
+    pp.fit(X)
+    assert pp.loss_curve_ == first
+
+
+def test_fit_does_not_mutate_n_components():
+    """fit() must not overwrite the n_components hyperparameter."""
+    X = np.random.RandomState(0).randn(30, 3)
+
+    pp = ProjectionPursuit(n_components=5, n_init=1, max_iter=5, random_state=1)
+    with pytest.warns(UserWarning, match="n_components"):
+        pp.fit(X)
+
+    assert pp.n_components == 5
+    assert pp.n_components_ == 3
+
+
 def test_random_state_reproducibility():
     """Test that random_state ensures reproducibility."""
     np.random.seed(42)  # Fix the data generation seed

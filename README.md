@@ -26,7 +26,8 @@ pip install pyppur
   - **Spearman**: Rank-based correlation for monotonic preservation
   - **MSE**: Mean squared error (scale-sensitive, original behavior)
 - Multiple initialization strategies (PCA-based and random)
-- Full scikit-learn compatible API
+- Familiar `fit` / `transform` / `fit_transform` API (see the note under
+  [API Reference](#api-reference) on scikit-learn interoperability)
 - Supports standardization and custom weighting
 - **Outlier robustness**: The tanh nonlinearity bounds outputs, providing natural outlier resistance
 
@@ -116,6 +117,14 @@ The main class in `pyppur` is `ProjectionPursuit`, which provides the following 
 - `compute_trustworthiness(X, n_neighbors)`: Measure how well local structure is preserved
 - `compute_silhouette(X, labels)`: Measure how well clusters are separated
 - `evaluate(X, labels, n_neighbors)`: Compute all evaluation metrics at once
+
+### scikit-learn interoperability
+
+`ProjectionPursuit` follows scikit-learn's `fit`/`transform` naming, but it is not a
+drop-in scikit-learn estimator: it does not subclass `BaseEstimator`/`TransformerMixin`,
+provides no `get_params`/`set_params`, and `fit`/`fit_transform` take no `y`, so it
+cannot be dropped into a `Pipeline` or passed to `clone`, `GridSearchCV`, or
+`cross_val_score`. Use it directly on arrays.
 
 ## Theory
 

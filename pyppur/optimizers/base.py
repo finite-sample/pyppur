@@ -45,9 +45,9 @@ class BaseOptimizer(ABC):
         self.verbose = verbose
         self.kwargs = kwargs
 
-        # Set random seed if provided
-        if random_state is not None:
-            np.random.seed(random_state)
+        # Private stream, so constructing or running an optimizer never disturbs
+        # the caller's global NumPy random state.
+        self.rng = np.random.RandomState(random_state)
 
     @abstractmethod
     def optimize(

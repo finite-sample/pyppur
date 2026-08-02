@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- `transform()` no longer applies the ridge function when the model was fitted with
+  `use_nonlinearity_in_distance=False`. The objective is evaluated on the linear
+  projection in that case, so the previous behaviour returned an embedding the model
+  had never been fitted to, and `distance_distortion(X)` disagreed with
+  `evaluate(X)["distance_distortion"]` for the same fitted model. `reconstruct()` now
+  uses the same embedding as `transform()`.
+- Constructing or fitting a `ProjectionPursuit` (or any optimizer) no longer calls
+  `np.random.seed`, so the caller's global NumPy random stream is left untouched.
+  Initializations are drawn from private `RandomState` streams; results for a given
+  `random_state` are unchanged.
+- `loss_curve_` is reset at the start of each `fit()` instead of accumulating the
+  values of previous fits.
+- `fit()` no longer overwrites the `n_components` hyperparameter when it exceeds the
+  number of features. The value actually used is exposed as `n_components_`.
+
+### Added
+- `n_components_` fitted attribute.
+
+### Changed
+- Documentation no longer claims a "full scikit-learn compatible API".
+  `ProjectionPursuit` follows scikit-learn's method naming but is not a drop-in
+  estimator: no `BaseEstimator` base class, no `get_params`/`set_params`, and it
+  cannot be used as a `Pipeline` step.
+
 ## [0.5.0] - 2026-03-23
 
 ### Added
