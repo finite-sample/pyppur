@@ -13,12 +13,12 @@ readme = "README.md"
 authors = [
     {name = "Gaurav Sood", email = "gsood07@gmail.com"}
 ]
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.12"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
@@ -36,7 +36,12 @@ dependencies = [
     "matplotlib>=3.3.0",
 ]
 
-[project.optional-dependencies]
+[project.urls]
+"Homepage" = "https://github.com/gojiplus/pyppur"
+"Bug Tracker" = "https://github.com/gojiplus/pyppur/issues"
+
+
+[dependency-groups]
 docs = [
     "sphinx>=7.0",
     "furo>=2024.1.29",
@@ -44,13 +49,6 @@ docs = [
     "sphinx-copybutton>=0.5",
     "myst-parser>=2.0",
 ]
-
-[project.urls]
-"Homepage" = "https://github.com/gojiplus/pyppur"
-"Bug Tracker" = "https://github.com/gojiplus/pyppur/issues"
-
-
-[dependency-groups]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -119,3 +117,6 @@ check-return-types = false
 check-yield-types = false
 skip-checking-raises = true
 allow-init-docstring = true
+# Without an exclude pydoclint walks the whole project directory, which on a
+# synced checkout means every installed dependency under .venv.
+exclude = '\.venv|tests|docs'

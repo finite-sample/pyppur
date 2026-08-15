@@ -51,8 +51,8 @@ pp_dist = ProjectionPursuit(
     objective=Objective.DISTANCE_DISTORTION,
     alpha=0.1,  # Lower alpha works better for distance preservation
     distance_metric="correlation",  # Scale-invariant (default)
-    n_init=3,   # Number of random initializations
-    verbose=True
+    n_init=3,  # Number of random initializations
+    verbose=True,
 )
 
 # Fit and transform
@@ -60,10 +60,7 @@ X_transformed = pp_dist.fit_transform(X)
 
 # Projection pursuit with reconstruction loss (tied weights)
 pp_recon_tied = ProjectionPursuit(
-    n_components=2,
-    objective=Objective.RECONSTRUCTION,
-    alpha=1.0,
-    tied_weights=True
+    n_components=2, objective=Objective.RECONSTRUCTION, alpha=1.0, tied_weights=True
 )
 
 # Projection pursuit with reconstruction loss (free decoder)
@@ -72,7 +69,7 @@ pp_recon_free = ProjectionPursuit(
     objective=Objective.RECONSTRUCTION,
     alpha=1.0,
     tied_weights=False,
-    l2_reg=0.01
+    l2_reg=0.01,
 )
 
 # Fit and transform
@@ -128,7 +125,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 
-pipe = Pipeline([("pp", ProjectionPursuit(n_components=2)), ("lr", LogisticRegression())])
+pipe = Pipeline([
+    ("pp", ProjectionPursuit(n_components=2)),
+    ("lr", LogisticRegression()),
+])
 GridSearchCV(pipe, {"pp__alpha": [0.1, 0.5]}, cv=3).fit(X, y)
 ```
 

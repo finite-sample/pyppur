@@ -116,6 +116,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
         Args:
             X: Input data, shape (n_samples, n_features).
+            y: Ignored. Accepted for scikit-learn estimator API compatibility.
 
         Returns:
             The fitted model.
@@ -348,6 +349,8 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
         Args:
             X: Input data, shape (n_samples, n_features).
+            y: Ignored. Accepted for scikit-learn estimator API compatibility.
+            **fit_params: Ignored. Accepted for scikit-learn API compatibility.
 
         Returns:
             Transformed data, shape (n_samples, n_components).
