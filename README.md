@@ -125,10 +125,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 
-pipe = Pipeline([
-    ("pp", ProjectionPursuit(n_components=2)),
-    ("lr", LogisticRegression()),
-])
+pipe = Pipeline(
+    [
+        ("pp", ProjectionPursuit(n_components=2)),
+        ("lr", LogisticRegression()),
+    ]
+)
 GridSearchCV(pipe, {"pp__alpha": [0.1, 0.5]}, cv=3).fit(X, y)
 ```
 

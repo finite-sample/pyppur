@@ -1,6 +1,4 @@
-"""
-Distance distortion objective for projection pursuit.
-"""
+"""Distance distortion objective for projection pursuit."""
 
 from typing import Any, Literal
 
@@ -65,7 +63,9 @@ class DistanceObjective(BaseObjective):
         k: int,
         dist_X: np.ndarray | None = None,
         weight_matrix: np.ndarray | None = None,
-        **kwargs: Any,
+        # Part of the BaseObjective calling convention; this objective takes
+        # no extra options.
+        **kwargs: Any,  # noqa: ARG002
     ) -> float:
         """Compute the distance distortion objective.
 
@@ -99,12 +99,8 @@ class DistanceObjective(BaseObjective):
         # Project the data
         Y = X @ a_matrix.T
 
-        if self.use_nonlinearity:
-            # Apply ridge function before computing distances
-            Z = self.g(Y, self.alpha)
-        else:
-            # Use linear projections for distance computation
-            Z = Y
+        # Ridge function before computing distances, or linear projections.
+        Z = self.g(Y, self.alpha) if self.use_nonlinearity else Y
 
         # Compute distances in projection space
         dist_Z = squareform(pdist(Z, metric="euclidean"))

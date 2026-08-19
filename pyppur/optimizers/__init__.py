@@ -1,6 +1,4 @@
-"""
-Optimization methods for projection pursuit.
-"""
+"""Optimization methods for projection pursuit."""
 
 from .grid_optimizer import GridOptimizer
 from .scipy_optimizer import ScipyOptimizer

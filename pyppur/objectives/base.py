@@ -1,15 +1,13 @@
-"""
-Base class for objective functions.
-"""
+"""Base class for objective functions."""
 
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 import numpy as np
 
 
-class Objective(str, Enum):
+class Objective(StrEnum):
     """Objective types for projection pursuit."""
 
     DISTANCE_DISTORTION = "distance_distortion"
@@ -27,7 +25,6 @@ class BaseObjective(ABC):
             alpha: Steepness parameter for ridge functions.
             **kwargs: Additional keyword arguments.
         """
-
         self.alpha = alpha
         self.kwargs = kwargs
 
@@ -46,7 +43,6 @@ class BaseObjective(ABC):
         Returns:
             Objective function value.
         """
-        pass
 
     @staticmethod
     def g(z: np.ndarray, alpha: float = 1.0) -> np.ndarray:

@@ -1,0 +1,13 @@
+# Managed by copier — records template version for `copier update`. Do not edit.
+_commit: v1.0.1
+_src_path: gh:gojiplus/py-canon
+author_email: gsood07@gmail.com
+author_name: Gaurav Sood
+coverage_floor: 85
+default_branch: main
+description: Advanced Projection Pursuit implementation with tied/untied weights,
+    nonlinear/linear distance distortion, and comprehensive documentation
+needs_cli: false
+org: finite-sample
+package_name: pyppur
+project_name: pyppur

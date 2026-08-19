@@ -16,8 +16,7 @@ def simple_data():
     np.random.seed(42)
     X = np.random.randn(50, 10)
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    return X_scaled
+    return scaler.fit_transform(X)
 
 
 def test_tied_vs_untied_reconstruction(simple_data):

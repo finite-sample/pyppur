@@ -24,5 +24,5 @@ def test_objective_validation():
     assert Objective.RECONSTRUCTION == "reconstruction"
 
     # Invalid type should raise an error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid"):
         Objective("invalid")

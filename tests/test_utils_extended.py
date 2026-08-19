@@ -2,9 +2,9 @@
 Extended tests for utilities with better coverage.
 """
 
-import matplotlib
+import matplotlib as mpl
 
-matplotlib.use("Agg")  # Use non-interactive backend
+mpl.use("Agg")  # Use non-interactive backend
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -89,19 +89,16 @@ def test_plot_reconstruction():
 @pytest.mark.skip("Visualization test - may be flaky in CI")
 def test_plot_comparison_2d():
     """Test comparison plot with 2D embeddings."""
-    pass
 
 
 @pytest.mark.skip("Visualization test - may be flaky in CI")
 def test_plot_comparison_3d():
     """Test comparison plot with 3D embeddings."""
-    pass
 
 
 @pytest.mark.skip("Visualization test - may be flaky in CI")
 def test_plot_comparison_without_labels():
     """Test comparison plot without labels."""
-    pass
 
 
 def test_visualization_error_cases():
@@ -138,7 +135,7 @@ def test_standardize_data_edge_cases():
 
     # Test with single sample
     X_single = np.random.randn(1, 5)
-    X_std_single, scaler_single = standardize_data(X_single, center=True, scale=True)
+    X_std_single, _scaler_single = standardize_data(X_single, center=True, scale=True)
     assert X_std_single.shape == X_single.shape
 
     # Test with different data using pre-fitted scaler (same number of features)

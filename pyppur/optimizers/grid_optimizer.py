@@ -1,13 +1,14 @@
-"""
-Grid-based optimizer for projection pursuit.
-"""
+"""Grid-based optimizer for projection pursuit."""
 
+import logging
 from collections.abc import Callable
 from typing import Any
 
 import numpy as np
 
 from pyppur.optimizers.base import BaseOptimizer
+
+logger = logging.getLogger(__name__)
 
 
 class GridOptimizer(BaseOptimizer):
@@ -68,8 +69,7 @@ class GridOptimizer(BaseOptimizer):
             Random directions, shape (n_directions, n_features).
         """
         directions = self.rng.randn(n_directions, n_features)
-        directions = directions / np.linalg.norm(directions, axis=1, keepdims=True)
-        return directions
+        return directions / np.linalg.norm(directions, axis=1, keepdims=True)
 
     def _optimize_sequential(
         self, X: np.ndarray, initial_directions: np.ndarray | None = None, **kwargs: Any
@@ -90,7 +90,7 @@ class GridOptimizer(BaseOptimizer):
                 - Final objective value
                 - Loss values for each component
         """
-        n_samples, n_features = X.shape
+        _n_samples, n_features = X.shape
         best_directions = np.zeros((self.n_components, n_features))
         loss_values = []
 
@@ -110,8 +110,9 @@ class GridOptimizer(BaseOptimizer):
         # Optimize each direction sequentially
         for component in range(self.n_components):
             if self.verbose:
-                print(f"Optimizing component {component + 1}/{self.n_components}")
-
+                logger.info(
+                    "Optimizing component %d/%d", component + 1, self.n_components
+                )
             best_loss = np.inf
             best_direction = None
 
@@ -146,8 +147,7 @@ class GridOptimizer(BaseOptimizer):
             # Perform iterations to refine the direction
             for iteration in range(self.n_iterations):
                 if self.verbose:
-                    print(f"  Iteration {iteration + 1}/{self.n_iterations}")
-
+                    logger.info("  Iteration %d/%d", iteration + 1, self.n_iterations)
                 # Generate random directions
                 if iteration == 0 and best_direction is None:
                     # First iteration: completely random directions
@@ -172,7 +172,7 @@ class GridOptimizer(BaseOptimizer):
                     )
 
                 # Evaluate each direction
-                for i, direction in enumerate(directions):
+                for direction in directions:
                     # Set this direction in the best_directions array
                     best_directions[component] = direction
 
@@ -192,14 +192,16 @@ class GridOptimizer(BaseOptimizer):
                         best_direction = direction
 
                 if self.verbose:
-                    print(f"    Best loss: {best_loss}")
+                    logger.info("    Best loss: %s", best_loss)
 
             # Update the best directions with the best one found
             best_directions[component] = best_direction
             loss_values.append(best_loss)
 
             if self.verbose:
-                print(f"  Component {component + 1} optimized, loss: {best_loss}")
+                logger.info(
+                    "  Component %d optimized, loss: %s", component + 1, best_loss
+                )
 
         # Final evaluation with all components
         objective_args = (

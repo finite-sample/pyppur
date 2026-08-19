@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv_build>=0.9.14,<0.13.0"]
+requires = ["uv_build>=0.12.5,<0.13"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
@@ -37,8 +37,8 @@ dependencies = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/gojiplus/pyppur"
-"Bug Tracker" = "https://github.com/gojiplus/pyppur/issues"
+"Homepage" = "https://github.com/finite-sample/pyppur"
+"Bug Tracker" = "https://github.com/finite-sample/pyppur/issues"
 
 
 [dependency-groups]
@@ -48,6 +48,7 @@ docs = [
     "sphinx-autodoc-typehints>=1.25",
     "sphinx-copybutton>=0.5",
     "myst-parser>=2.0",
+    "py-canon @ git+https://github.com/gojiplus/py-canon@v1",
 ]
 dev = [
     "pytest>=7.0",
@@ -56,53 +57,56 @@ dev = [
     "pyright>=1.1.390",
     "pydoclint>=0.5.0",
     "pre-commit>=3.0",
-    "preen>=0.1.0",
 ]
 test = ["pytest>=7.0", "pytest-cov>=4.0"]
 
 [tool.ruff]
 line-length = 88
 target-version = "py312"
-preview = true
-exclude = ["docs/conf.py"]
 
 [tool.ruff.lint]
-# Enable pycodestyle (`E`), Pyflakes (`F`), isort (`I`), and pydoclint (`DOC`) codes
-select = ["E", "F", "I", "DOC"]  # E/F for flake8, I for isort, DOC for pydoclint
-ignore = ["DOC201", "DOC501"]  # Ignore return/exception documentation (using type hints)
+external = ["DOC"]
+select = [
+    "E", "W", "F", "I", "B", "C4", "UP", "N", "D", "S", "SIM", "T20", "PT", "RUF",
+    "PTH", "RET", "PIE", "FURB", "PERF", "DTZ", "LOG", "G", "TC", "FLY",
+    "RSE", "SLOT", "FA", "A", "EXE", "ICN", "PGH", "PLE", "ARG", "SLF",
+]
+# D203/D213: the google convention the fleet standard picks. W191/D206/D300:
+# ruff's own docs list these as always incompatible with `ruff format`, which
+# the standard also runs.
+ignore = ["D203", "D213", "W191", "D206", "D300",
+    # sklearn API convention: the data matrix is capitalized (X, X_train, X_recon)
+    # throughout the public API and everything that calls it.
+    "N803", "N806",
+]
 
-# Allow fix for all enabled rules (when `--fix`) is provided.
-fixable = ["ALL"]
-unfixable = []
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
-# Per-file ignores for common ML/matplotlib patterns
 [tool.ruff.lint.per-file-ignores]
-"pyppur/examples/*.py" = ["F841"]  # Allow unused variables in examples
-"tests/*.py" = ["F841"]  # Allow unused variables in tests  
-"pyppur/utils/visualization.py" = ["F841"]  # Allow unused fig objects
-
-[tool.ruff.format]
-# Like Black, use double quotes for strings.
-quote-style = "double"
-
-# Like Black, indent with spaces, rather than tabs.
-indent-style = "space"
-
-# Like Black, respect magic trailing commas.
-skip-magic-trailing-comma = false
-
-# Like Black, automatically detect the appropriate line ending.
-line-ending = "auto"
+"tests/**" = ["S101", "D", "ARG", "SLF"]
+"docs/**" = ["D"]
+# Demo scripts and research benchmarks communicate through stdout by design.
+"pyppur/examples/**" = ["T201"]
+"experiments/**" = ["T201"]
 
 [tool.pyright]
-pythonVersion = "3.12"
+include = ["pyppur"]
 typeCheckingMode = "standard"
-include = ["pyppur", "tests"]
+pythonVersion = "3.12"
 exclude = ["**/__pycache__", "build", "dist"]
 reportMissingImports = true
 reportMissingTypeStubs = false
 reportPrivateImportUsage = false
 stubPath = "typings"
+
+[tool.codespell]
+# "Sammon" (mapping) is a proper noun; "eduction" is the bold-split acronym
+# expansion "**R**eduction" in the README title.
+ignore-words-list = "sammon,eduction"
+
+[tool.coverage.run]
+source = ["pyppur"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -111,12 +115,11 @@ addopts = ""
 
 [tool.pydoclint]
 style = "google"
-arg-type-hints-in-signature = true
 arg-type-hints-in-docstring = false
 check-return-types = false
+check-class-attributes = false
+allow-init-docstring = true
+exclude = '\.venv|tests|docs'
+arg-type-hints-in-signature = true
 check-yield-types = false
 skip-checking-raises = true
-allow-init-docstring = true
-# Without an exclude pydoclint walks the whole project directory, which on a
-# synced checkout means every installed dependency under .venv.
-exclude = '\.venv|tests|docs'

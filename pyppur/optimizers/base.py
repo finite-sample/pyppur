@@ -1,6 +1,4 @@
-"""
-Base class for optimization methods.
-"""
+"""Base class for optimization methods."""
 
 from abc import ABC, abstractmethod
 from collections.abc import Callable
@@ -34,7 +32,7 @@ class BaseOptimizer(ABC):
             max_iter: Maximum number of iterations.
             tol: Tolerance for convergence.
             random_state: Random seed for reproducibility.
-            verbose: Whether to print progress information.
+            verbose: Whether to log progress information.
             **kwargs: Additional keyword arguments.
         """
         self.objective_func = objective_func
@@ -66,4 +64,3 @@ class BaseOptimizer(ABC):
                 - Final objective value
                 - Additional optimizer information
         """
-        pass

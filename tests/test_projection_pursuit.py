@@ -39,7 +39,7 @@ def test_init() -> None:
     pp = ProjectionPursuit()
     assert pp.n_components == 2
     assert pp.objective == Objective.DISTANCE_DISTORTION
-    assert pp.alpha == 0.1
+    assert pp.alpha == pytest.approx(0.1)
     assert pp.distance_metric == "correlation"
 
     # Custom initialization
@@ -52,7 +52,7 @@ def test_init() -> None:
     )
     assert pp.n_components == 3
     assert pp.objective == Objective.RECONSTRUCTION
-    assert pp.alpha == 1.5
+    assert pp.alpha == pytest.approx(1.5)
     assert pp.max_iter == 1000
     assert pp.random_state == 42
 
@@ -114,7 +114,7 @@ def test_distance_distortion_pipeline(
 
 def test_reconstruction_pipeline(digits_data: tuple[np.ndarray, np.ndarray]) -> None:
     """Test the full pipeline with reconstruction objective."""
-    X, y = digits_data
+    X, _y = digits_data
 
     pp = ProjectionPursuit(
         n_components=2,
@@ -183,24 +183,24 @@ def test_error_handling() -> None:
     pp = ProjectionPursuit()
 
     # Calling methods before fitting
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="not fitted"):
         pp.transform(np.random.randn(10, 5))
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="not fitted"):
         pp.reconstruct(np.random.randn(10, 5))
 
-    with pytest.raises(ValueError):
-        pp.x_loadings_
+    with pytest.raises(ValueError, match="not fitted"):
+        _ = pp.x_loadings_
 
     # Incorrect input shape
     pp = ProjectionPursuit()
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="2D array"):
         pp.fit(np.random.randn(10))  # 1D array
 
     # n_components > n_features
     X = np.random.randn(10, 3)
     pp = ProjectionPursuit(n_components=5)
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="must be <= n_features"):
         pp.fit(X)
     # The hyperparameter is left alone; the effective value is a fitted attribute.
     assert pp.n_components == 5

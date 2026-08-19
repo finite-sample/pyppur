@@ -1,5 +1,4 @@
-"""
-Benchmark experiments to evaluate pyppur's value proposition.
+"""Benchmark experiments to evaluate pyppur's value proposition.
 
 Tests:
 1. Distance correlation - does pyppur preserve distances better than baselines?
@@ -7,6 +6,8 @@ Tests:
 3. Reconstruction error - can pyppur reconstruct held-out data?
 4. Ablation - does the tanh nonlinearity help?
 """
+
+import operator
 
 import numpy as np
 from scipy.spatial.distance import pdist
@@ -95,7 +96,8 @@ def run_distance_correlation_test(X, name, n_components=2):
     # Print results sorted by correlation
     print("\nResults (higher = better distance preservation):")
     print("-" * 40)
-    for method, corr in sorted(results.items(), key=lambda x: x[1], reverse=True):
+    ranked = sorted(results.items(), key=operator.itemgetter(1), reverse=True)
+    for method, corr in ranked:
         print(f"  {method:25s}: {corr:.4f}")
 
     return results
@@ -181,7 +183,8 @@ def run_knn_classification_test(X, y, name, n_components=2):
     # Print results sorted by accuracy
     print("\nResults (higher = better class separation):")
     print("-" * 40)
-    for method, acc in sorted(results.items(), key=lambda x: x[1], reverse=True):
+    ranked = sorted(results.items(), key=operator.itemgetter(1), reverse=True)
+    for method, acc in ranked:
         print(f"  {method:25s}: {acc:.4f}")
 
     return results
@@ -243,13 +246,14 @@ def run_reconstruction_test(X, name, n_components=2):
     # Print results sorted by MSE (lower is better)
     print("\nResults (lower = better reconstruction):")
     print("-" * 40)
-    for method, mse in sorted(results.items(), key=lambda x: x[1]):
+    for method, mse in sorted(results.items(), key=operator.itemgetter(1)):
         print(f"  {method:25s}: {mse:.4f}")
 
     return results
 
 
 def main():
+    """Run all benchmarks."""
     print("\n" + "=" * 60)
     print("PYPPUR VALUE PROPOSITION BENCHMARK")
     print("=" * 60)
@@ -268,7 +272,7 @@ def main():
     X_wine, y_wine = wine.data, wine.target
 
     # Swiss roll is only used unsupervised below, so t is not discretized here.
-    X_swiss, t_swiss = make_swiss_roll(n_samples=500, noise=0.5, random_state=42)
+    X_swiss, _t_swiss = make_swiss_roll(n_samples=500, noise=0.5, random_state=42)
 
     all_results = {
         "distance_correlation": {},
@@ -337,7 +341,7 @@ def main():
     print("\n2. k-NN CLASSIFICATION (higher = better):")
     print("   Key question: Does pyppur preserve class structure?")
     for dataset, results in all_results["knn_classification"].items():
-        best_method = max(results.items(), key=lambda x: x[1])
+        best_method = max(results.items(), key=operator.itemgetter(1))
         pca_score = results.get("PCA", 0)
         print(
             f"   {dataset}: Best={best_method[0]} ({best_method[1]:.3f}), "
