@@ -1,20 +1,17 @@
-"""
-Main implementation of Projection Pursuit for dimensionality reduction.
-"""
+"""Main implementation of Projection Pursuit for dimensionality reduction."""
 
+import logging
 import time
 import warnings
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted, validate_data
 
 from pyppur.objectives import Objective
-from pyppur.objectives.base import BaseObjective
 from pyppur.objectives.distance import DistanceMetric, DistanceObjective
 from pyppur.objectives.reconstruction import ReconstructionObjective
 from pyppur.optimizers import ScipyOptimizer
@@ -24,6 +21,32 @@ from pyppur.utils.metrics import (
     compute_trustworthiness,
 )
 from pyppur.utils.preprocessing import standardize_data
+
+logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from sklearn.preprocessing import StandardScaler
+
+    from pyppur.objectives.base import BaseObjective
+
+
+def _validate_data(estimator: Any, X: Any, **kwargs: Any) -> np.ndarray:
+    """Typed facade over sklearn's validate_data.
+
+    scikit-learn ships no type stubs, so pyright infers the signature from the
+    library source, where the `X` parameter defaults to the string sentinel
+    "no_validation". Funnelling calls through this facade keeps the call sites
+    clean without per-line suppressions.
+
+    Args:
+        estimator: The estimator whose input is being validated.
+        X: Input data to validate.
+        **kwargs: Options forwarded to sklearn's validate_data.
+
+    Returns:
+        The validated data array.
+    """
+    return cast("np.ndarray", validate_data(estimator, X, **kwargs))
 
 
 class ProjectionPursuit(TransformerMixin, BaseEstimator):
@@ -65,7 +88,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
             random_state: Random seed for reproducibility.
             optimizer: Optimization method ('L-BFGS-B' recommended).
             n_init: Number of random initializations to try.
-            verbose: Whether to print progress information.
+            verbose: Whether to log progress information.
             center: Whether to center the data.
             scale: Whether to scale the data.
             weight_by_distance: Whether to weight distance distortion by inverse
@@ -111,7 +134,12 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         self._optimizer_info: dict[str, Any] = {}
         self._n_components_fitted: int | None = None
 
-    def fit(self, X: np.ndarray, y: Any = None) -> "ProjectionPursuit":
+    def fit(
+        self,
+        X: np.ndarray,
+        # Ignored; the scikit-learn estimator API requires accepting `y`.
+        y: Any = None,  # noqa: ARG002
+    ) -> "ProjectionPursuit":
         """Fit the ProjectionPursuit model to the data.
 
         Args:
@@ -125,9 +153,9 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
         # Records n_features_in_, rejects NaN/inf and sparse input, and raises
         # the messages scikit-learn's estimator checks look for.
-        X = validate_data(self, X, reset=True, dtype=np.float64, ensure_min_samples=2)
+        X = _validate_data(self, X, reset=True, dtype=np.float64, ensure_min_samples=2)
 
-        n_samples, n_features = X.shape
+        _n_samples, n_features = X.shape
 
         # The constructor argument is never mutated; the effective value used by this
         # fit is exposed as the fitted attribute n_components_.
@@ -135,7 +163,8 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         if n_components > n_features:
             warnings.warn(
                 f"n_components={n_components} must be <= n_features={n_features}. "
-                f"Using n_components={n_features} for this fit"
+                f"Using n_components={n_features} for this fit",
+                stacklevel=2,
             )
             n_components = n_features
         self._n_components_fitted = n_components
@@ -193,11 +222,11 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
         # Try PCA initialization
         if self.verbose:
-            print("Trying PCA initialization...")
+            logger.info("Trying PCA initialization...")
 
         pca = PCA(n_components=n_components)
         _ = pca.fit_transform(X_scaled)
-        a0_pca = pca.components_  # Use PCA directions as starting point
+        a0_pca = np.asarray(pca.components_)  # Use PCA directions as starting point
 
         # For untied weights, initialize decoder as well
         if self.objective == Objective.RECONSTRUCTION and not self.tied_weights:
@@ -233,8 +262,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         # Try random initializations
         for i in range(self.n_init):
             if self.verbose:
-                print(f"Random initialization {i + 1}/{self.n_init}...")
-
+                logger.info("Random initialization %d/%d...", i + 1, self.n_init)
             init_rng = np.random.RandomState(
                 self.random_state + i if self.random_state is not None else None
             )
@@ -266,7 +294,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
                 self._loss_curve.append(loss_random)
 
         if self.verbose:
-            print(f"Best optimization loss: {best_loss}")
+            logger.info("Best optimization loss: %s", best_loss)
 
         # Store the best result
         self._best_loss = best_loss
@@ -313,7 +341,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
             Transformed data, shape (n_samples, n_components).
         """
         check_is_fitted(self)
-        X = validate_data(self, X, reset=False, dtype=np.float64)
+        X = _validate_data(self, X, reset=False, dtype=np.float64)
 
         # Scale data if model was fitted with scaling
         if self._scaler is not None:
@@ -322,7 +350,8 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
             X_scaled = X
 
         # Project the data using the optimal projection directions
-        assert self._x_loadings is not None
+        if self._x_loadings is None:
+            raise RuntimeError("fit() did not set _x_loadings; this is a bug.")
 
         # Normalize encoder directions
         x_loadings_normalized = self._x_loadings / np.linalg.norm(
@@ -334,7 +363,8 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         # DistanceObjective built with use_nonlinearity=False was optimized on the
         # linear projection, so applying tanh here would return an embedding the
         # model was never fitted to.
-        assert self._objective_func is not None
+        if self._objective_func is None:
+            raise RuntimeError("fit() did not set _objective_func; this is a bug.")
         if getattr(self._objective_func, "use_nonlinearity", True):
             Z_transformed = self._objective_func.g(Z, self.alpha)
         else:
@@ -343,7 +373,11 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         return Z_transformed
 
     def fit_transform(
-        self, X: np.ndarray, y: Any = None, **fit_params: Any
+        self,
+        X: np.ndarray,
+        y: Any = None,
+        # Accepted for scikit-learn API compatibility; fit() takes no options.
+        **fit_params: Any,  # noqa: ARG002
     ) -> np.ndarray:
         """Fit the model with X and apply dimensionality reduction on X.
 
@@ -385,8 +419,10 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
             X_scaled = X
 
         # Reconstruct the data
-        assert self._x_loadings is not None
-        assert self._objective_func is not None
+        if self._x_loadings is None:
+            raise RuntimeError("fit() did not set _x_loadings; this is a bug.")
+        if self._objective_func is None:
+            raise RuntimeError("fit() did not set _objective_func; this is a bug.")
 
         # Normalize encoder directions
         x_loadings_normalized = self._x_loadings / np.linalg.norm(
@@ -454,14 +490,16 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
         # Project and compute distances in projected space
         # Use the same logic as in transform but respect the distance objective setting
-        assert self._x_loadings is not None
+        if self._x_loadings is None:
+            raise RuntimeError("fit() did not set _x_loadings; this is a bug.")
         x_loadings_normalized = self._x_loadings / np.linalg.norm(
             self._x_loadings, axis=1, keepdims=True
         )
         Y = X_scaled @ x_loadings_normalized.T
 
         if self.use_nonlinearity_in_distance:
-            assert self._objective_func is not None
+            if self._objective_func is None:
+                raise RuntimeError("fit() did not set _objective_func; this is a bug.")
             Z = self._objective_func.g(Y, self.alpha)
         else:
             Z = Y
@@ -510,9 +548,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         # Compute trustworthiness (adjust n_neighbors if needed)
         n_samples = X_scaled.shape[0]
         effective_neighbors = min(n_neighbors, max(1, int(n_samples / 2) - 1))
-        trust = compute_trustworthiness(X_scaled, Z, n_neighbors=effective_neighbors)
-
-        return trust
+        return compute_trustworthiness(X_scaled, Z, n_neighbors=effective_neighbors)
 
     def compute_silhouette(self, X: np.ndarray, labels: np.ndarray) -> float:
         """Compute the silhouette score for the dimensionality reduction.
@@ -543,18 +579,17 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
         Z = self.transform(X)
 
         # Check if we have enough samples for each label
-        unique_labels, counts = np.unique(labels, return_counts=True)
+        _unique_labels, counts = np.unique(labels, return_counts=True)
         if any(counts < 2):
             warnings.warn(
                 "Some labels have fewer than 2 samples, silhouette score may be "
-                "undefined"
+                "undefined",
+                stacklevel=2,
             )
             return np.nan
 
         # Compute silhouette score
-        silhouette = compute_silhouette(Z, labels)
-
-        return silhouette
+        return compute_silhouette(Z, labels)
 
     def evaluate(
         self, X: np.ndarray, labels: np.ndarray | None = None, n_neighbors: int = 5
@@ -601,7 +636,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
     @property
     def n_components_(self) -> int:
-        """Get the number of components actually used by the fit.
+        """Number of components actually used by the fit.
 
         This equals the ``n_components`` constructor argument, except when that
         exceeded the number of features, in which case it is the number of
@@ -615,12 +650,13 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
                 "This ProjectionPursuit instance is not fitted yet. "
                 "Call 'fit' before using this method."
             )
-        assert self._n_components_fitted is not None
+        if self._n_components_fitted is None:
+            raise RuntimeError("fit() did not set _n_components_fitted; this is a bug.")
         return self._n_components_fitted
 
     @property
     def x_loadings_(self) -> np.ndarray:
-        """Get the projection directions (encoder).
+        """Projection directions (encoder).
 
         Returns:
             Projection directions, shape (n_components, n_features).
@@ -630,12 +666,13 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
                 "This ProjectionPursuit instance is not fitted yet. "
                 "Call 'fit' before using this method."
             )
-        assert self._x_loadings is not None
+        if self._x_loadings is None:
+            raise RuntimeError("fit() did not set _x_loadings; this is a bug.")
         return self._x_loadings
 
     @property
     def decoder_weights_(self) -> np.ndarray | None:
-        """Get the decoder weights (for untied weights only).
+        """Decoder weights (for untied weights only).
 
         Returns:
             Decoder weights, shape (n_components, n_features), or None if using
@@ -650,7 +687,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
     @property
     def loss_curve_(self) -> list[float]:
-        """Get the loss curve during optimization.
+        """Loss curve during optimization.
 
         Returns:
             Loss values during optimization.
@@ -659,7 +696,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
     @property
     def best_loss_(self) -> float:
-        """Get the best loss value achieved.
+        """Best loss value achieved.
 
         Returns:
             Best loss value.
@@ -668,7 +705,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
     @property
     def fit_time_(self) -> float:
-        """Get the time taken to fit the model.
+        """Time taken to fit the model.
 
         Returns:
             Time in seconds.
@@ -677,7 +714,7 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
 
     @property
     def optimizer_info_(self) -> dict[str, Any]:
-        """Get additional information from the optimizer.
+        """Additional information from the optimizer.
 
         Returns:
             Optimizer information.

@@ -1,5 +1,4 @@
-"""
-Test concrete rescue strategies for pyppur.
+"""Test concrete rescue strategies for pyppur.
 
 Strategies:
 1. Use very small alpha (near-linear) - already shown to help
@@ -8,6 +7,8 @@ Strategies:
 4. Market for outlier robustness use case
 5. Add distance scaling post-hoc
 """
+
+import operator
 
 import numpy as np
 from scipy.optimize import minimize
@@ -24,8 +25,8 @@ from pyppur import Objective, ProjectionPursuit
 
 
 def correlation_objective(a_flat, X, k, d_orig, alpha=0.01):
-    """
-    Alternative objective: maximize distance correlation instead of minimize MSE.
+    """Alternative objective: maximize distance correlation instead of minimize MSE.
+
     Returns negative correlation (for minimization).
     """
     n_features = X.shape[1]
@@ -47,8 +48,8 @@ def correlation_objective(a_flat, X, k, d_orig, alpha=0.01):
 
 
 def sammon_objective(a_flat, X, k, d_orig, alpha=0.01):
-    """
-    Sammon mapping objective: sum((d_X - d_Z)^2 / d_X)
+    """Sammon mapping objective: sum((d_X - d_Z)^2 / d_X).
+
     This normalizes by original distance, handling scale naturally.
     """
     n_features = X.shape[1]
@@ -66,8 +67,7 @@ def sammon_objective(a_flat, X, k, d_orig, alpha=0.01):
 
     # Sammon stress
     mask = d_orig > 1e-10
-    stress = np.sum((d_orig[mask] - d_embed[mask]) ** 2 / d_orig[mask])
-    return stress
+    return np.sum((d_orig[mask] - d_embed[mask]) ** 2 / d_orig[mask])
 
 
 def test_alternative_objectives(X, name):
@@ -80,7 +80,7 @@ def test_alternative_objectives(X, name):
     X_scaled = scaler.fit_transform(X)
     d_orig = pdist(X_scaled, metric="euclidean")
 
-    n_samples, n_features = X_scaled.shape
+    _n_samples, n_features = X_scaled.shape
     k = 2
 
     # Initialize with PCA
@@ -100,7 +100,7 @@ def test_alternative_objectives(X, name):
     )
     X_pp_std = pp_standard.fit_transform(X_scaled)
     d_pp_std = pdist(X_pp_std, metric="euclidean")
-    results["pyppur (std, α=1.0)"] = pearsonr(d_orig, d_pp_std)[0]
+    results["pyppur (std, alpha=1.0)"] = pearsonr(d_orig, d_pp_std)[0]
 
     # 2. pyppur with very low alpha
     pp_low_alpha = ProjectionPursuit(
@@ -112,7 +112,7 @@ def test_alternative_objectives(X, name):
     )
     X_pp_low = pp_low_alpha.fit_transform(X_scaled)
     d_pp_low = pdist(X_pp_low, metric="euclidean")
-    results["pyppur (α=0.01)"] = pearsonr(d_orig, d_pp_low)[0]
+    results["pyppur (alpha=0.01)"] = pearsonr(d_orig, d_pp_low)[0]
 
     # 3. Correlation objective (custom optimization)
     print("  Running correlation objective optimization...")
@@ -127,7 +127,7 @@ def test_alternative_objectives(X, name):
     A_corr = A_corr / np.linalg.norm(A_corr, axis=1, keepdims=True)
     Z_corr = np.tanh(0.1 * (X_scaled @ A_corr.T))
     d_corr = pdist(Z_corr, metric="euclidean")
-    results["Correlation obj (α=0.1)"] = pearsonr(d_orig, d_corr)[0]
+    results["Correlation obj (alpha=0.1)"] = pearsonr(d_orig, d_corr)[0]
 
     # 4. Sammon objective
     print("  Running Sammon objective optimization...")
@@ -142,7 +142,7 @@ def test_alternative_objectives(X, name):
     A_sammon = A_sammon / np.linalg.norm(A_sammon, axis=1, keepdims=True)
     Z_sammon = np.tanh(0.1 * (X_scaled @ A_sammon.T))
     d_sammon = pdist(Z_sammon, metric="euclidean")
-    results["Sammon obj (α=0.1)"] = pearsonr(d_orig, d_sammon)[0]
+    results["Sammon obj (alpha=0.1)"] = pearsonr(d_orig, d_sammon)[0]
 
     # 5. Baselines
     pca_full = PCA(n_components=k)
@@ -157,15 +157,16 @@ def test_alternative_objectives(X, name):
 
     print("\nDistance correlation results (higher = better):")
     print("-" * 50)
-    for method, corr in sorted(results.items(), key=lambda x: x[1], reverse=True):
+    ranked = sorted(results.items(), key=operator.itemgetter(1), reverse=True)
+    for method, corr in ranked:
         print(f"  {method:25s}: {corr:.4f}")
 
     return results
 
 
 def test_outlier_use_case():
-    """
-    Test the outlier robustness use case in a realistic scenario.
+    """Test the outlier robustness use case in a realistic scenario.
+
     Use case: Classification with outlier-contaminated training data.
     """
     print(f"\n{'=' * 60}")
@@ -232,7 +233,7 @@ def test_outlier_use_case():
     X_test_pp = pp_tanh.transform(X_test_scaled)
     knn = KNeighborsClassifier(n_neighbors=5)
     knn.fit(X_train_pp, y_train)
-    results["pyppur (tanh, α=1.0)"] = knn.score(X_test_pp, y_test)
+    results["pyppur (tanh, alpha=1.0)"] = knn.score(X_test_pp, y_test)
 
     # pyppur with low alpha
     pp_low = ProjectionPursuit(
@@ -247,11 +248,12 @@ def test_outlier_use_case():
     X_test_pp_low = pp_low.transform(X_test_scaled)
     knn = KNeighborsClassifier(n_neighbors=5)
     knn.fit(X_train_pp_low, y_train)
-    results["pyppur (tanh, α=0.1)"] = knn.score(X_test_pp_low, y_test)
+    results["pyppur (tanh, alpha=0.1)"] = knn.score(X_test_pp_low, y_test)
 
     print("\nClassification accuracy on clean test set (trained on contaminated data):")
     print("-" * 50)
-    for method, acc in sorted(results.items(), key=lambda x: x[1], reverse=True):
+    ranked = sorted(results.items(), key=operator.itemgetter(1), reverse=True)
+    for method, acc in ranked:
         print(f"  {method:25s}: {acc:.4f}")
 
     # Compare with clean training data
@@ -295,14 +297,15 @@ def test_outlier_use_case():
     )
     print(
         f"  pyppur: {results_clean['pyppur (clean)']:.4f} → "
-        f"{results['pyppur (tanh, α=1.0)']:.4f} "
-        f"(Δ={results['pyppur (tanh, α=1.0)'] - results_clean['pyppur (clean)']:+.4f})"
+        f"{results['pyppur (tanh, alpha=1.0)']:.4f} "
+        f"(Δ="
+        f"{results['pyppur (tanh, alpha=1.0)'] - results_clean['pyppur (clean)']:+.4f})"
     )
 
 
 def test_bounded_representation_use_case():
-    """
-    Test use case where bounded representations are desirable.
+    """Test use case where bounded representations are desirable.
+
     Example: Features for neural network input (want bounded activations).
     """
     print(f"\n{'=' * 60}")
@@ -397,6 +400,7 @@ Based on our investigation, here are concrete fixes:
 
 
 def main():
+    """Run all rescue-strategy experiments."""
     # Load test datasets
     digits = load_digits()
     X_digits = digits.data[:500]

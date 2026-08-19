@@ -1,6 +1,4 @@
-"""
-Reconstruction loss objective for projection pursuit.
-"""
+"""Reconstruction loss objective for projection pursuit."""
 
 from typing import Any
 
@@ -39,7 +37,13 @@ class ReconstructionObjective(BaseObjective):
         self.l2_reg = l2_reg
 
     def __call__(
-        self, a_flat: np.ndarray, X: np.ndarray, k: int, **kwargs: Any
+        self,
+        a_flat: np.ndarray,
+        X: np.ndarray,
+        k: int,
+        # Part of the BaseObjective calling convention; this objective takes
+        # no extra options.
+        **kwargs: Any,  # noqa: ARG002
     ) -> float:
         """Compute the reconstruction objective.
 
@@ -108,11 +112,5 @@ class ReconstructionObjective(BaseObjective):
         Z = self.g(X @ a_matrix.T, self.alpha)
 
         # Reconstruct the data
-        if b_matrix is None:
-            # Use tied weights
-            X_hat = Z @ a_matrix
-        else:
-            # Use separate decoder
-            X_hat = Z @ b_matrix
-
-        return X_hat
+        # Tied weights reuse the encoder; untied weights use a separate decoder.
+        return Z @ a_matrix if b_matrix is None else Z @ b_matrix

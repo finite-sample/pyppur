@@ -79,13 +79,13 @@ def test_preprocessing():
     assert np.allclose(X_std1.std(axis=0), 1.0, atol=1e-10)
 
     # Test standardize_data with centering only
-    X_std2, scaler2 = standardize_data(X, center=True, scale=False)
+    X_std2, _scaler2 = standardize_data(X, center=True, scale=False)
     assert X_std2.shape == X.shape
     assert np.allclose(X_std2.mean(axis=0), 0.0, atol=1e-10)
     assert not np.allclose(X_std2.std(axis=0), 1.0)
 
     # Test standardize_data with scaling only
-    X_std3, scaler3 = standardize_data(X, center=False, scale=True)
+    X_std3, _scaler3 = standardize_data(X, center=False, scale=True)
     assert X_std3.shape == X.shape
     assert not np.allclose(X_std3.mean(axis=0), 0.0)
 
@@ -105,10 +105,10 @@ def test_visualization_errors():
     labels = np.random.randint(0, 3, size=50)
 
     # Test plot_embedding with invalid embedding dimensionality
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="2D or 3D"):
         plot_embedding(embedding_4d, labels)
 
     # Test plot_comparison with invalid embedding dimensionality
     embeddings = {"Method 1": embedding_2d, "Method 2": embedding_3d}
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="same number of dimensions"):
         plot_comparison(embeddings, labels)

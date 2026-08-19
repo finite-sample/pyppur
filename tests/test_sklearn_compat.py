@@ -36,7 +36,7 @@ def test_passes_the_full_estimator_check_suite():
 def test_get_and_set_params_round_trip():
     pp = _pp()
     assert "alpha" in pp.get_params()
-    assert pp.set_params(alpha=0.3).alpha == 0.3
+    assert pp.set_params(alpha=0.3).alpha == pytest.approx(0.3)
 
 
 def test_clone_reproduces_the_unfitted_estimator(data):
@@ -81,7 +81,7 @@ def test_transform_rejects_bad_input(data):
     pp.fit(X)
     bad = X.copy()
     bad[0, 0] = np.nan
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="NaN"):
         pp.transform(bad)
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="features"):
         pp.transform(X[:, :3])

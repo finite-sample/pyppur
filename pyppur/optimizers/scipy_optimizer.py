@@ -1,7 +1,6 @@
-"""
-SciPy-based optimizer for projection pursuit.
-"""
+"""SciPy-based optimizer for projection pursuit."""
 
+import logging
 from collections.abc import Callable
 from typing import Any
 
@@ -9,6 +8,8 @@ import numpy as np
 from scipy.optimize import minimize
 
 from pyppur.optimizers.base import BaseOptimizer
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_projection_directions(
@@ -69,7 +70,7 @@ class ScipyOptimizer(BaseOptimizer):
             max_iter: Maximum number of iterations.
             tol: Tolerance for convergence.
             random_state: Random seed for reproducibility.
-            verbose: Whether to print progress information.
+            verbose: Whether to log progress information.
             **kwargs: Additional keyword arguments for the optimizer.
         """
         super().__init__(
@@ -110,7 +111,7 @@ class ScipyOptimizer(BaseOptimizer):
         # If no initial guess provided, use PCA or random initialization
         if initial_guess is None:
             if self.verbose:
-                print("No initial guess provided, using random initialization")
+                logger.info("No initial guess provided, using random initialization")
             initial_guess_matrix = self.rng.randn(self.n_components, n_features)
             initial_guess_matrix = initial_guess_matrix / np.linalg.norm(
                 initial_guess_matrix, axis=1, keepdims=True
@@ -120,10 +121,12 @@ class ScipyOptimizer(BaseOptimizer):
             # Add decoder for untied weights
             if is_untied:
                 decoder_guess = self.rng.randn(self.n_components, n_features) * 0.1
-                initial_guess_flat = np.concatenate([
-                    initial_guess_flat,
-                    decoder_guess.flatten(),
-                ])
+                initial_guess_flat = np.concatenate(
+                    [
+                        initial_guess_flat,
+                        decoder_guess.flatten(),
+                    ]
+                )
         else:
             # Handle both tied and untied weights initial guess
             if initial_guess.size == expected_params:
@@ -134,10 +137,12 @@ class ScipyOptimizer(BaseOptimizer):
                 initial_guess_flat = initial_guess.flatten()
                 if is_untied:
                     decoder_guess = self.rng.randn(self.n_components, n_features) * 0.1
-                    initial_guess_flat = np.concatenate([
-                        initial_guess_flat,
-                        decoder_guess.flatten(),
-                    ])
+                    initial_guess_flat = np.concatenate(
+                        [
+                            initial_guess_flat,
+                            decoder_guess.flatten(),
+                        ]
+                    )
             else:
                 raise ValueError(
                     f"Initial guess size {initial_guess.size} does not match "
@@ -201,10 +206,9 @@ class ScipyOptimizer(BaseOptimizer):
         ):
             # Return the full parameter vector (will be handled by main class)
             return result_normalized, result.fun, info
-        else:
-            # Return just the encoder matrix for tied weights
-            encoder_params = self.n_components * n_features
-            a_matrix = result_normalized[:encoder_params].reshape(
-                self.n_components, n_features
-            )
-            return a_matrix, result.fun, info
+        # Return just the encoder matrix for tied weights
+        encoder_params = self.n_components * n_features
+        a_matrix = result_normalized[:encoder_params].reshape(
+            self.n_components, n_features
+        )
+        return a_matrix, result.fun, info

@@ -1,6 +1,4 @@
-"""
-Evaluation metrics for dimensionality reduction.
-"""
+"""Evaluation metrics for dimensionality reduction."""
 
 import warnings
 
@@ -42,12 +40,13 @@ def compute_silhouette(X_embedded: np.ndarray, labels: np.ndarray) -> float:
     """
     unique_labels, counts = np.unique(labels, return_counts=True)
     if len(unique_labels) < 2:
-        warnings.warn("Silhouette score requires at least two clusters")
+        warnings.warn("Silhouette score requires at least two clusters", stacklevel=2)
         return np.nan
 
     if any(counts < 2):
         warnings.warn(
-            "Some labels have fewer than 2 samples, silhouette may be undefined"
+            "Some labels have fewer than 2 samples, silhouette may be undefined",
+            stacklevel=2,
         )
         return np.nan
 

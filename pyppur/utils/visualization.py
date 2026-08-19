@@ -1,6 +1,4 @@
-"""
-Visualization utilities for projection pursuit results.
-"""
+"""Visualization utilities for projection pursuit results."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -53,7 +51,8 @@ def _plot_2d_embedding(
     ax.set_ylabel("Component 2")
     ax.grid(True, linestyle="--", alpha=0.7)
 
-    assert isinstance(fig, Figure)
+    if not isinstance(fig, Figure):
+        raise TypeError("plt.figure() returned a non-Figure object.")
     return fig, ax
 
 
@@ -109,7 +108,8 @@ def _plot_3d_embedding(
     ax.set_zlabel("Component 3")
     ax.grid(True, linestyle="--", alpha=0.7)
 
-    assert isinstance(fig, Figure)
+    if not isinstance(fig, Figure):
+        raise TypeError("plt.figure() returned a non-Figure object.")
     return fig, ax
 
 
@@ -154,14 +154,13 @@ def plot_embedding(
         return _plot_3d_embedding(
             X_embedded, labels, title, metrics, figsize, cmap, alpha, s, ax_3d
         )
-    else:
-        # For 2D, ax can only be None or regular Axes
-        ax_2d = None if ax is None else ax
-        if ax_2d is not None and isinstance(ax_2d, Axes3D):
-            raise ValueError("For 2D plots, ax must be a regular Axes instance or None")
-        return _plot_2d_embedding(
-            X_embedded, labels, title, metrics, figsize, cmap, alpha, s, ax_2d
-        )
+    # For 2D, ax can only be None or regular Axes
+    ax_2d = None if ax is None else ax
+    if ax_2d is not None and isinstance(ax_2d, Axes3D):
+        raise ValueError("For 2D plots, ax must be a regular Axes instance or None")
+    return _plot_2d_embedding(
+        X_embedded, labels, title, metrics, figsize, cmap, alpha, s, ax_2d
+    )
 
 
 def plot_reconstruction(
@@ -215,12 +214,12 @@ def plot_reconstruction(
         if sqrt_features**2 == n_features:
             # Square image data - reshape and plot as image
             original = X_viz[i].reshape(sqrt_features, sqrt_features)
-            im1 = axes[0, i].imshow(original, cmap="viridis", norm=norm)
+            axes[0, i].imshow(original, cmap="viridis", norm=norm)
             axes[0, i].set_title("Original")
             axes[0, i].axis("off")
 
             reconstructed = X_recon_viz[i].reshape(sqrt_features, sqrt_features)
-            im2 = axes[1, i].imshow(reconstructed, cmap="viridis", norm=norm)
+            axes[1, i].imshow(reconstructed, cmap="viridis", norm=norm)
             axes[1, i].set_title("Reconstructed")
             axes[1, i].axis("off")
         else:

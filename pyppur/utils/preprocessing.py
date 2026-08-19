@@ -1,6 +1,4 @@
-"""
-Preprocessing utilities for projection pursuit.
-"""
+"""Preprocessing utilities for projection pursuit."""
 
 import numpy as np
 from sklearn.preprocessing import StandardScaler

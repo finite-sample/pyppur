@@ -1,5 +1,4 @@
-"""
-Deep investigation into pyppur's failure modes and potential rescues.
+"""Deep investigation into pyppur's failure modes and potential rescues.
 
 Hypotheses to test:
 1. Scale mismatch: tanh bounds output to [-1,1], distances can't match
@@ -158,12 +157,14 @@ def test_alpha_sensitivity(X, name):
 
         corr, _ = pearsonr(d_orig, d_pp)
         rank_corr, _ = spearmanr(d_orig, d_pp)
-        results.append({
-            "alpha": alpha,
-            "pearson": corr,
-            "spearman": rank_corr,
-            "loss": pp.best_loss_,
-        })
+        results.append(
+            {
+                "alpha": alpha,
+                "pearson": corr,
+                "spearman": rank_corr,
+                "loss": pp.best_loss_,
+            }
+        )
         print(
             f"  alpha={alpha:5.2f}: Pearson={corr:.4f}, "
             f"Spearman={rank_corr:.4f}, loss={pp.best_loss_:.4f}"
@@ -215,8 +216,9 @@ def test_optimization_quality(X, name):
         )
 
 
-def test_outlier_robustness(n_samples=200):
+def test_outlier_robustness():
     """Test if tanh helps with outlier robustness."""
+    n_samples = 200
     print(f"\n{'=' * 60}")
     print("OUTLIER ROBUSTNESS TEST")
     print("=" * 60)
@@ -330,9 +332,9 @@ def test_cluster_separation():
 
 
 def test_sammon_style_objective(X, name):
-    """
-    Test what happens if we use Sammon-style normalized stress.
-    Sammon mapping uses: sum((d_X - d_Z)^2 / d_X) instead of sum((d_X - d_Z)^2)
+    """Test what happens if we use Sammon-style normalized stress.
+
+    Sammon mapping uses: sum((d_X - d_Z)^2 / d_X) instead of sum((d_X - d_Z)^2).
     This naturally handles scale.
     """
     print(f"\n{'=' * 60}")
@@ -384,13 +386,14 @@ def test_sammon_style_objective(X, name):
 
 
 def main():
+    """Run all investigations."""
     # Load test datasets
     digits = load_digits()
     X_digits = digits.data[:500]
 
     X_swiss, _ = make_swiss_roll(n_samples=300, noise=0.5, random_state=42)
 
-    X_blobs, _ = make_blobs(n_samples=200, n_features=20, centers=4, random_state=42)
+    _X_blobs, _ = make_blobs(n_samples=200, n_features=20, centers=4, random_state=42)
 
     print("\n" + "#" * 60)
     print("# DEEP INVESTIGATION INTO PYPPUR FAILURE MODES")

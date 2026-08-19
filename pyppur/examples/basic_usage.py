@@ -118,7 +118,7 @@ def digits_example() -> None:
     }
 
     # Plot comparison
-    fig = plot_comparison(embeddings, y, metrics)
+    plot_comparison(embeddings, y, metrics)
     plt.tight_layout()
     plt.savefig("digits_comparison.png", dpi=300)
     plt.close()

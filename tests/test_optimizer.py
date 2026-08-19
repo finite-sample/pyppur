@@ -19,8 +19,7 @@ def sample_data():
     digits = load_digits()
     X = digits.data[:100]  # type: ignore[attr-defined]
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(X)
-    return X_scaled
+    return scaler.fit_transform(X)
 
 
 def test_scipy_optimizer_reconstruction(sample_data):

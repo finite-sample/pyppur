@@ -102,7 +102,7 @@ def test_objective_validation_edge_cases():
     assert Objective("reconstruction") == Objective.RECONSTRUCTION
 
     # Test with invalid string
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="invalid_objective"):
         Objective("invalid_objective")
 
 
