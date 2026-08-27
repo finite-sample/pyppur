@@ -180,7 +180,7 @@ def test_projection_pursuit_properties():
 
 def test_evaluation_metrics_edge_cases():
     """Test evaluation metrics with edge cases."""
-    X = np.random.randn(15, 3)
+    X = np.random.RandomState(42).randn(15, 3)
 
     pp = ProjectionPursuit(random_state=42, max_iter=5)
     pp.fit(X)
@@ -190,8 +190,10 @@ def test_evaluation_metrics_edge_cases():
     expected_keys = {"trustworthiness", "distance_distortion", "reconstruction_error"}
     assert set(metrics_no_labels.keys()) == expected_keys
 
-    # Test evaluation with labels
-    labels = np.random.randint(0, 3, size=15)
+    # Test evaluation with labels. Assigned rather than drawn: randint(0, 3)
+    # over 15 points sometimes leaves a class with a single member, which
+    # makes silhouette undefined and the suite fail intermittently.
+    labels = np.array([0] * 5 + [1] * 5 + [2] * 5)
     metrics_with_labels = pp.evaluate(X, labels=labels)
     expected_keys.add("silhouette")
     assert set(metrics_with_labels.keys()) == expected_keys
