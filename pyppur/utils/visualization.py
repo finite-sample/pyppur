@@ -285,7 +285,10 @@ def plot_comparison(
             plot_metrics = metrics[name]
 
         # Plot embedding
-        _, _ = plot_embedding(
+        # figsize belongs to this function's own plt.subplots call above.
+        # plot_embedding only uses figsize when it has to create a figure,
+        # and it is being handed an existing ax.
+        _, _ = plot_embedding(  # preen: allow-dropped-arg
             embedding,
             labels,
             title=name,
