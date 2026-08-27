@@ -170,13 +170,11 @@ def test_metrics_edge_cases():
     # Test silhouette with edge case
     labels_single = np.zeros(10)  # All same label
 
-    # This might give a warning or special value
-    try:
+    # Silhouette is undefined for one cluster: compute_silhouette warns and
+    # returns nan rather than raising. Pin that, so a silent change is a failure.
+    with pytest.warns(UserWarning, match="at least two clusters"):
         silhouette_single = compute_silhouette(embedding_identical, labels_single)
-        assert np.isnan(silhouette_single) or (-1.0 <= silhouette_single <= 1.0)
-    except ValueError:
-        # This is also acceptable - silhouette is undefined for single cluster
-        pass
+    assert np.isnan(silhouette_single)
 
 
 def test_evaluate_embedding_comprehensive():

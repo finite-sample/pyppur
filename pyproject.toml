@@ -111,7 +111,20 @@ source = ["pyppur"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
-addopts = ""
+addopts = ["--strict-config", "--strict-markers", "-ra"]
+minversion = "6"
+log_level = "INFO"
+xfail_strict = true
+filterwarnings = [
+    "error",
+    # scikit-learn 1.9.0 (the latest release) still sets .shape on arrays
+    # inside its own estimator-check suite, which NumPy 2.5 deprecates.
+    # Nothing in pyppur does this. Drop when sklearn stops.
+    "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
+    # sklearn's estimator-check suite reports the checks it skips for lack of
+    # SCIPY_ARRAY_API. That is a notice about the environment, not a defect.
+    "ignore::sklearn.exceptions.SkipTestWarning",
+]
 
 [tool.pydoclint]
 style = "google"
