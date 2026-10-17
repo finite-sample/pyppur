@@ -101,6 +101,7 @@ reportPrivateImportUsage = false
 stubPath = "typings"
 
 [tool.codespell]
+builtin = "clear,rare,en-GB_to_en-US"
 # "Sammon" (mapping) is a proper noun; "eduction" is the bold-split acronym
 # expansion "**R**eduction" in the README title.
 ignore-words-list = "sammon,eduction"
