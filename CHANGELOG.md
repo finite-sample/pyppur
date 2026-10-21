@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `transform()` no longer applies the ridge function when the model was fitted with
   `use_nonlinearity_in_distance=False`. The objective is evaluated on the linear
-  projection in that case, so the previous behaviour returned an embedding the model
+  projection in that case, so the previous behavior returned an embedding the model
   had never been fitted to, and `distance_distortion(X)` disagreed with
   `evaluate(X)["distance_distortion"]` for the same fitted model. `reconstruct()` now
   uses the same embedding as `transform()`.
