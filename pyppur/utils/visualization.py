@@ -273,7 +273,12 @@ def plot_comparison(
     if embedding_dim not in (2, 3):
         raise ValueError(f"Can only plot 2D or 3D embeddings, got {embedding_dim}D")
 
-    fig, axes = plt.subplots(1, n_plots, figsize=figsize)
+    fig, axes = plt.subplots(
+        1,
+        n_plots,
+        figsize=figsize,
+        subplot_kw={"projection": "3d"} if embedding_dim == 3 else None,
+    )
 
     if n_plots == 1:
         axes = [axes]
