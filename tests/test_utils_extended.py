@@ -86,19 +86,30 @@ def test_plot_reconstruction():
     plt.close("all")
 
 
-@pytest.mark.skip("Visualization test - may be flaky in CI")
-def test_plot_comparison_2d():
-    """Test comparison plot with 2D embeddings."""
+@pytest.mark.parametrize("dimension", [2, 3])
+@pytest.mark.parametrize("with_labels", [False, True])
+def test_plot_comparison_renders_each_embedding(dimension, with_labels, tmp_path):
+    """Comparison plots render every embedding on the requested axes."""
+    rng = np.random.default_rng(42)
+    embeddings = {
+        name: rng.normal(size=(12, dimension)) for name in ("first", "second")
+    }
+    labels = np.arange(12) % 3 if with_labels else None
 
-
-@pytest.mark.skip("Visualization test - may be flaky in CI")
-def test_plot_comparison_3d():
-    """Test comparison plot with 3D embeddings."""
-
-
-@pytest.mark.skip("Visualization test - may be flaky in CI")
-def test_plot_comparison_without_labels():
-    """Test comparison plot without labels."""
+    fig = plot_comparison(embeddings, labels, title="Comparison")
+    try:
+        axes = [ax for ax in fig.axes if ax.get_title() in embeddings]
+        assert len(axes) == 2
+        assert all(
+            ax.name == ("3d" if dimension == 3 else "rectilinear") for ax in axes
+        )
+        for ax in axes:
+            assert len(ax.collections) == 1
+        output = tmp_path / "comparison.png"
+        fig.savefig(output)
+        assert output.stat().st_size > 0
+    finally:
+        plt.close(fig)
 
 
 def test_visualization_error_cases():
