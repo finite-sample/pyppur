@@ -71,6 +71,38 @@ class GridOptimizer(BaseOptimizer):
         directions = self.rng.randn(n_directions, n_features)
         return directions / np.linalg.norm(directions, axis=1, keepdims=True)
 
+    def _evaluate_direction(
+        self,
+        X: np.ndarray,
+        best_directions: np.ndarray,
+        component: int,
+        direction: np.ndarray,
+        kwargs: dict[str, Any],
+    ) -> float:
+        """Score ``direction`` as component ``component`` given those before it.
+
+        Writes ``direction`` into ``best_directions[component]`` in place, so the
+        row holds the last candidate evaluated until the caller overwrites it.
+
+        Args:
+            X: Input data, shape (n_samples, n_features).
+            best_directions: Directions found so far, shape
+                (n_components, n_features); modified in place.
+            component: Index of the component being optimized.
+            direction: Candidate direction, shape (n_features,).
+            kwargs: Extra objective arguments, passed positionally in order.
+
+        Returns:
+            Objective value over the first ``component + 1`` directions.
+        """
+        best_directions[component] = direction
+        return self.objective_func(
+            best_directions[: component + 1].flatten(),
+            X,
+            component + 1,
+            *kwargs.values(),
+        )
+
     def _optimize_sequential(
         self, X: np.ndarray, initial_directions: np.ndarray | None = None, **kwargs: Any
     ) -> tuple[np.ndarray, float, list[float]]:
@@ -126,18 +158,8 @@ class GridOptimizer(BaseOptimizer):
                     current_direction
                 )
 
-                # Set this direction in the best_directions array
-                best_directions[component] = current_direction
-
-                # Evaluate with this direction
-                objective_args = (
-                    (X, component + 1)
-                    if len(kwargs) == 0
-                    else (X, component + 1, *kwargs.values())
-                )
-
-                current_loss = self.objective_func(
-                    best_directions[: component + 1].flatten(), *objective_args
+                current_loss = self._evaluate_direction(
+                    X, best_directions, component, current_direction, kwargs
                 )
 
                 if current_loss < best_loss:
@@ -173,18 +195,8 @@ class GridOptimizer(BaseOptimizer):
 
                 # Evaluate each direction
                 for direction in directions:
-                    # Set this direction in the best_directions array
-                    best_directions[component] = direction
-
-                    # Evaluate with this direction
-                    objective_args = (
-                        (X, component + 1)
-                        if len(kwargs) == 0
-                        else (X, component + 1, *kwargs.values())
-                    )
-
-                    loss = self.objective_func(
-                        best_directions[: component + 1].flatten(), *objective_args
+                    loss = self._evaluate_direction(
+                        X, best_directions, component, direction, kwargs
                     )
 
                     if loss < best_loss:
