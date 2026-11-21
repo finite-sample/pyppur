@@ -73,7 +73,8 @@ class DistanceObjective(BaseObjective):
             a_flat: Flattened projection directions.
             X: Input data.
             k: Number of projections.
-            dist_X: Pairwise distances in original space (optional).
+            dist_X: Optional original distances as a square matrix. The
+                correlation metrics also accept the condensed order from pdist.
             weight_matrix: Optional weight matrix for distances.
             **kwargs: Additional arguments.
 
@@ -84,6 +85,28 @@ class DistanceObjective(BaseObjective):
         a_matrix = a_flat.reshape(k, X.shape[1])
 
         # Note: Normalization is now handled in the optimizer, not here
+
+        # Project the data
+        Y = X @ a_matrix.T
+
+        # Ridge function before computing distances, or linear projections.
+        Z = self.g(Y, self.alpha) if self.use_nonlinearity else Y
+
+        projected = pdist(Z, metric="euclidean")
+        if self.distance_metric != "mse":
+            # pdist already orders pairs like the strict upper triangle.
+            if dist_X is None:
+                original = pdist(X, metric="euclidean")
+            elif dist_X.ndim == 2:
+                original = dist_X[np.triu_indices_from(dist_X, k=1)]
+            else:
+                original = dist_X
+            if np.std(projected) < 1e-10:
+                return 1.0
+            if self.distance_metric == "correlation":
+                return -float(np.corrcoef(original, projected)[0, 1])
+            result = spearmanr(original, projected)
+            return -float(result.correlation)  # type: ignore[union-attr]
 
         # Compute distances in original space if not provided
         if dist_X is None:
@@ -96,50 +119,11 @@ class DistanceObjective(BaseObjective):
             np.fill_diagonal(weight_matrix, 0)  # Ignore self-distances
             weight_matrix = weight_matrix / weight_matrix.sum()  # Normalize
 
-        # Project the data
-        Y = X @ a_matrix.T
-
-        # Ridge function before computing distances, or linear projections.
-        Z = self.g(Y, self.alpha) if self.use_nonlinearity else Y
-
-        # Compute distances in projection space
-        dist_Z = squareform(pdist(Z, metric="euclidean"))
-
-        # Calculate the distortion based on the chosen metric
-        if self.distance_metric == "correlation":
-            # Use Pearson correlation (scale-invariant)
-            # Extract upper triangular elements (excluding diagonal)
-            triu_idx = np.triu_indices_from(dist_X, k=1)
-            d_orig_flat = dist_X[triu_idx]
-            d_embed_flat = dist_Z[triu_idx]
-
-            # Compute Pearson correlation
-            if np.std(d_embed_flat) < 1e-10:
-                # If all embedded distances are the same, correlation is undefined
-                return 1.0
-
-            corr = np.corrcoef(d_orig_flat, d_embed_flat)[0, 1]
-            # Minimize negative correlation (maximize correlation)
-            loss = -corr
-
-        elif self.distance_metric == "spearman":
-            # Use Spearman rank correlation (scale and monotonic-invariant)
-            triu_idx = np.triu_indices_from(dist_X, k=1)
-            d_orig_flat = dist_X[triu_idx]
-            d_embed_flat = dist_Z[triu_idx]
-
-            if np.std(d_embed_flat) < 1e-10:
-                return 1.0
-
-            result = spearmanr(d_orig_flat, d_embed_flat)
-            corr = float(result.correlation)  # type: ignore[union-attr]
-            loss = -corr
-
-        else:  # mse
-            # Mean squared error (original behavior, scale-sensitive)
-            if weight_matrix is not None:
-                loss = np.mean(weight_matrix * (dist_X - dist_Z) ** 2)
-            else:
-                loss = np.mean((dist_X - dist_Z) ** 2)
+        dist_Z = squareform(projected)
+        # Mean squared error (original behavior, scale-sensitive)
+        if weight_matrix is not None:
+            loss = np.mean(weight_matrix * (dist_X - dist_Z) ** 2)
+        else:
+            loss = np.mean((dist_X - dist_Z) ** 2)
 
         return float(loss)

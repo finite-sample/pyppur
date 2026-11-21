@@ -195,10 +195,12 @@ class ProjectionPursuit(TransformerMixin, BaseEstimator):
             )
         else:  # DISTANCE_DISTORTION
             # Compute pairwise distances for distance distortion
-            dist_X = squareform(pdist(X_scaled, metric="euclidean"))
+            dist_X = pdist(X_scaled, metric="euclidean")
+            if self.distance_metric == "mse":
+                dist_X = squareform(dist_X)
 
             # Create weight matrix if requested
-            if self.weight_by_distance:
+            if self.weight_by_distance and self.distance_metric == "mse":
                 weight_matrix = 1.0 / (
                     dist_X + 0.1
                 )  # Add small constant to avoid division by zero

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Performance
+- Pearson and Spearman distance fits keep one distance per pair, avoiding square
+  matrices and triangle indexing during repeated objective evaluations.
+
 ### Fixed
 - `transform()` no longer applies the ridge function when the model was fitted with
   `use_nonlinearity_in_distance=False`. The objective is evaluated on the linear
