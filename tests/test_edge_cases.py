@@ -101,14 +101,9 @@ def test_projection_pursuit_different_optimizers():
             optimizer=optimizer, random_state=42, max_iter=10, n_init=1
         )
 
-        try:
-            Z = pp.fit_transform(X)
-            assert Z.shape == (30, 2)
-            assert not np.any(np.isnan(Z))
-        except Exception as e:
-            # Some optimizers might not be available or might fail
-            # This is acceptable for testing purposes
-            pytest.skip(f"Optimizer {optimizer} failed: {e}")
+        Z = pp.fit_transform(X)
+        assert Z.shape == (30, 2)
+        assert not np.any(np.isnan(Z))
 
 
 def test_projection_pursuit_reconstruction_consistency():
