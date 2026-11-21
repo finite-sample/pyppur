@@ -4,6 +4,7 @@ Detailed tests for objective functions.
 
 import numpy as np
 import pytest
+from scipy import stats
 from scipy.spatial.distance import pdist, squareform
 
 from pyppur.objectives.base import BaseObjective, Objective
@@ -262,3 +263,22 @@ def test_mse_vs_correlation_behavior():
 
     # Correlation loss should be valid regardless of scale
     assert -1.0 <= loss_corr <= 1.0
+
+
+@pytest.mark.parametrize("metric", ["correlation", "spearman"])
+def test_condensed_distances_match_pairwise_reference(metric):
+    """Compare tied distances and duplicate rows with explicit pairs."""
+    X = np.array([[0, 0], [0, 0], [1, 2], [2, 0], [0, 2]], dtype=float)
+    axis = np.array([1.0, 0.0])
+    original = np.array(
+        [np.linalg.norm(a - b) for i, a in enumerate(X) for b in X[i + 1 :]]
+    )
+    projected = np.array(
+        [abs((a - b) @ axis) for i, a in enumerate(X) for b in X[i + 1 :]]
+    )
+    correlation = stats.pearsonr if metric == "correlation" else stats.spearmanr
+    expected = -correlation(original, projected).statistic
+    objective = DistanceObjective(use_nonlinearity=False, distance_metric=metric)
+    for distances in (None, original, squareform(original)):
+        assert objective(axis, X, 1, dist_X=distances) == pytest.approx(expected)
+        assert objective(np.zeros(2), X, 1, dist_X=distances) == 1.0
