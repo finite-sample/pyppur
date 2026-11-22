@@ -11,7 +11,7 @@ version = "0.5.0"
 description = "Advanced Projection Pursuit implementation with tied/untied weights, nonlinear/linear distance distortion, and comprehensive documentation"
 readme = "README.md"
 authors = [
-    {name = "Gaurav Sood", email = "gsood07@gmail.com"}
+    {name = "Gaurav Sood"}
 ]
 license = "MIT"
 license-files = ["LICENSE"]
