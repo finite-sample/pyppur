@@ -18,6 +18,7 @@ jobs:
   ci:
     uses: gojiplus/py-canon/.github/workflows/reusable-ci.yml@v1
     with:
+      run-lower-bounds: true
       # requires-python is >=3.12, so the canon default matrix (3.11) cannot sync.
       python-versions: '["3.13", "3.14"]'
       wheel-import: pyppur
