@@ -1095,7 +1095,7 @@ test = [
 
 [package.metadata]
 requires-dist = [
-    { name = "matplotlib", specifier = ">=3.9.2" },
+    { name = "matplotlib", specifier = ">=3.10.7" },
     { name = "numpy", specifier = ">=2.1.0" },
     { name = "scikit-learn", specifier = ">=1.6.0" },
     { name = "scipy", specifier = ">=1.14.1" },
